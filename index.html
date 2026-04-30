@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard RUP & Realisasi</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
@@ -25,22 +26,22 @@
 
   <div id="loader" class="loading-overlay">
     <div class="spinner-border text-primary" role="status"></div>
-    <p class="mt-2 fw-bold text-primary">Memuat Data...</p>
+    <p class="mt-2 fw-bold text-primary" id="loader-text">Menghubungkan ke Database...</p>
   </div>
 
   <div class="container-fluid h-100 d-flex flex-column">
-    
     <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
       <h2 class="fw-bold text-dark m-0" style="font-size: 1.2rem;">Dashboard Monitoring RUP & Realisasi</h2>
       <div class="hide-on-print d-flex gap-2">
         <select id="selBulan" class="form-select form-select-sm shadow-sm" style="width: 150px; border: 1px solid #0d6efd;" onchange="refreshData()">
-          <option value="Maret">Memuat Bulan...</option>
+          <option value="">Memuat Bulan...</option>
         </select>
         <button class="btn btn-sm btn-danger shadow-sm" onclick="window.print()">🖨️ Cetak</button>
         <button class="btn btn-sm btn-primary shadow-sm" onclick="refreshData()">🔄 Refresh</button>
       </div>
     </div>
 
+    <!-- FILTER BAR -->
     <div class="global-filter-bar bg-white p-2 mb-2 rounded shadow-sm border hide-on-print d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-3">
         <div class="dropdown">
@@ -60,6 +61,7 @@
       <input type="text" id="search" class="form-control form-control-sm" style="width: 250px; border-radius: 20px;" placeholder="🔍 Cari Satker..." onkeyup="filterTable()">
     </div>
 
+    <!-- CARDS -->
     <div class="row g-2 mb-2 row-cols-5">
       <div class="col"><div class="card card-summary bg-gradient-primary"><small>Total Pagu</small><h3 id="txtTotalRUP" class="fw-bold">Rp 0</h3><small id="txtJmlPaket">0 Paket</small></div></div>
       <div class="col"><div class="card card-summary bg-gradient-success"><small>Penyedia</small><h3 id="txtNilaiPenyedia" class="fw-bold">Rp 0</h3><small id="txtJmlPenyedia">0 Paket</small></div></div>
@@ -68,46 +70,82 @@
       <div class="col"><div class="card card-summary bg-gradient-warning"><small>Total Selesai</small><h3 id="txtNilaiSelesai" class="fw-bold">Rp 0</h3><small id="txtJmlSelesai">0 Selesai</small></div></div>
     </div>
 
+    <!-- TABLES KIRI KANAN -->
     <div class="row g-2 mb-2 hide-on-print">
       <div class="col-md-6"><div class="table-container m-0"><h6 class="fw-bold text-primary mb-1">Metode Pemilihan</h6><div style="max-height: 100px; overflow-y:auto;"><table class="table table-sm table-borderless m-0" id="tableMetode"><thead><tr><th>Metode</th><th>Pkt</th><th class="text-end">Nilai</th></tr></thead><tbody></tbody></table></div></div></div>
       <div class="col-md-6"><div class="table-container m-0"><h6 class="fw-bold text-primary mb-1">Status Paket</h6><div style="max-height: 100px; overflow-y:auto;"><table class="table table-sm table-borderless m-0" id="tableStatus"><thead><tr><th>Status</th><th>Pkt</th><th class="text-end">Realisasi</th></tr></thead><tbody></tbody></table></div></div></div>
     </div>
 
+    <!-- TABEL UTAMA -->
     <div class="row g-2 flex-grow-1" style="min-height: 0;">
       <div class="col-12 h-100"><div class="table-container h-100 d-flex flex-column m-0"><div class="flex-grow-1" style="overflow-y: auto;"><table class="table table-hover align-middle table-sm" id="satkerTable" style="font-size: 0.8rem;"><thead class="table-dark sticky-top"><tr><th style="width: 40%">Satuan Kerja</th><th class="text-center">Total</th><th class="text-center">Jalan</th><th class="text-center">Belum</th><th class="text-end">Pagu</th><th class="text-end">Real</th></tr></thead><tbody></tbody></table></div></div></div>
     </div>
   </div>
 
+  <!-- MODAL POPUP -->
   <div class="modal fade" id="detailModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header bg-primary text-white py-2"><h6 class="modal-title fw-bold" id="detailModalLabel">Detail</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table table-sm table-hover m-0" id="modalTable"><thead class="table-dark sticky-top"><tr><th>Satker</th><th>Kode</th><th>Paket</th><th>Metode</th><th>Status</th><th class="text-end">Pagu</th><th class="text-end">Real</th></tr></thead><tbody></tbody></table></div></div></div></div>
 
   <script>
     let masterData = []; let allPackagesGlobal = []; let activeSatkersGlobal = [];
+    
+    // INI ADALAH LINK API GOOGLE SCRIPT ANDA
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyJ8o9NkZ0O58CoQXLzDkZBozPGVwdOrBuPajm1VMJWdoL_-yQ1gAwj9gY8XOurnn1DTQ/exec";
+
     function formatIDR(val) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val); }
 
-    window.onload = function() {
-      // Ambil daftar bulan dulu
-      google.script.run.withSuccessHandler(function(months) {
+    window.onload = async function() {
+      try {
+        document.getElementById('loader-text').innerText = "Mengambil daftar bulan...";
+        let response = await fetch(GAS_URL + "?action=getMonths");
+        let months = await response.json();
+        
+        if(months.error) throw new Error(months.error);
+
         const sel = document.getElementById('selBulan');
         sel.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
         fetchData();
-      }).getAvailableMonths();
+      } catch (err) {
+        document.getElementById("loader").style.display = "none";
+        alert("Gagal terhubung ke Database Google Sheets!\nPastikan Anda sudah Deploy Code.gs sebagai Aplikasi Web versi terbaru.\n\nDetail Error: " + err.message);
+      }
     };
 
-    function refreshData() { document.getElementById("loader").style.display = "flex"; fetchData(); }
+    function refreshData() { 
+      document.getElementById("loader").style.display = "flex"; 
+      fetchData(); 
+    }
 
-    function fetchData() {
+    async function fetchData() {
       const bulan = document.getElementById('selBulan').value;
-      google.script.run.withSuccessHandler(renderDashboard).getData(bulan);
+      if (!bulan) return;
+
+      document.getElementById('loader-text').innerText = `Menarik data bulan ${bulan}...`;
+      
+      try {
+        let response = await fetch(GAS_URL + "?action=getData&bulan=" + bulan);
+        let res = await response.json();
+        
+        if (res.error) throw new Error(res.error);
+        
+        renderDashboard(res);
+      } catch (err) {
+        document.getElementById("loader").style.display = "none";
+        alert("Gagal memuat data bulanan: " + err.message);
+      }
     }
 
     function renderDashboard(res) {
       masterData = res.rekapSatker; allPackagesGlobal = res.allPackages;
+      
       document.getElementById("checkboxContainer").innerHTML = masterData.map((item, index) => `
-        <div class="form-check ps-4 border-bottom pb-1"><input class="form-check-input satker-cb" type="checkbox" value="${item.namaSatker}" onchange="filterTable()" checked><label class="form-check-label d-block text-truncate" style="font-size: 0.75rem;">${item.namaSatker}</label></div>
+        <div class="form-check ps-4 border-bottom pb-1"><input class="form-check-input satker-cb" type="checkbox" value="${item.namaSatker}" onchange="filterTable()" checked><label class="form-check-label d-block text-truncate" style="font-size: 0.75rem; cursor:pointer;">${item.namaSatker}</label></div>
       `).join('');
-      document.querySelector("#satkerTable tbody").innerHTML = masterData.map(item => `
-        <tr data-satker="${item.namaSatker}"><td><span class="fw-bold text-dark">${item.namaSatker}</span></td><td class="text-center">${item.totalPaket}</td><td class="text-center"><span class="badge badge-soft-success">${item.dilaksanakan}</span></td><td class="text-center"><span class="badge badge-soft-danger">${item.belumDikerjakan}</span></td><td class="text-end">${formatIDR(item.nilaiRUP)}</td><td class="text-end fw-bold text-success">${formatIDR(item.nilaiReal)}</td></tr>
-      `).join('');
+      
+      document.querySelector("#satkerTable tbody").innerHTML = masterData.map(item => {
+        let persen = item.totalPaket > 0 ? Math.round((item.dilaksanakan / item.totalPaket) * 100) : 0;
+        return `<tr data-satker="${item.namaSatker}"><td><span class="fw-bold text-dark">${item.namaSatker}</span></td><td class="text-center">${item.totalPaket}</td><td class="text-center"><span class="badge badge-soft-success">${item.dilaksanakan}</span></td><td class="text-center"><span class="badge badge-soft-danger">${item.belumDikerjakan}</span></td><td class="text-end">${formatIDR(item.nilaiRUP)}</td><td class="text-end fw-bold text-success">${formatIDR(item.nilaiReal)}<div class="progress hide-on-print"><div class="progress-bar bg-success" style="width: ${persen}%"></div></div></td></tr>`
+      }).join('');
+      
       updateDynamicDashboard(masterData.map(s => s.namaSatker));
       document.getElementById("loader").style.display = "none";
     }
@@ -147,7 +185,7 @@
        document.getElementById('txtNilaiPenyedia').innerText = formatIDR(sPenN); document.getElementById('txtJmlPenyedia').innerText = sPenC + " Paket";
        document.getElementById('txtNilaiSwakelola').innerText = formatIDR(sSwkN); document.getElementById('txtJmlSwakelola').innerText = sSwkC + " Paket";
        document.getElementById('txtNilaiSelesai').innerText = formatIDR(sSelN); document.getElementById('txtJmlSelesai').innerText = sSelC + " Paket";
-       document.getElementById('txtNilaiEPurchasing').innerText = formatIDR(sEPN); document.getElementById('txtJmlEPurchasing').innerText = sEPC + " Pkt | " + sEPS + " Done";
+       document.getElementById('txtNilaiEPurchasing').innerText = formatIDR(sEPN); document.getElementById('txtJmlEPurchasing').innerText = sEPC + " Pkt | " + sEPS + " COMPLETED";
 
        document.querySelector("#tableMetode tbody").innerHTML = Object.keys(sMet).map(m => `<tr class="clickable-row" onclick="showModalDetails('metode', '${m}')"><td><span class="text-primary fw-bold">${m}</span></td><td class="text-center">${sMet[m].c}</td><td class="text-end">${formatIDR(sMet[m].n)}</td></tr>`).join('');
        document.querySelector("#tableStatus tbody").innerHTML = Object.keys(sSta).map(s => `<tr class="clickable-row" onclick="showModalDetails('status', '${s}')"><td><span class="text-primary fw-bold">${s}</span></td><td class="text-center">${sSta[s].c}</td><td class="text-end fw-bold">${formatIDR(sSta[s].n)}</td></tr>`).join('');
@@ -156,9 +194,10 @@
     function showModalDetails(type, val) {
         let filt = allPackagesGlobal.filter(p => activeSatkersGlobal.includes(p.satker) && (type === 'metode' ? p.metode === val : p.status === val));
         document.getElementById('detailModalLabel').innerText = `Detail ${val}`;
-        document.querySelector("#modalTable tbody").innerHTML = filt.map(p => `<tr><td><small class="fw-bold">${p.satker}</small></td><td><small>${p.kode}</small></td><td><small>${p.nama}</small></td><td><span class="badge bg-secondary">${p.metode}</span></td><td><span class="badge bg-info text-dark">${p.status}</span></td><td class="text-end">${formatIDR(p.pagu)}</td><td class="text-end fw-bold text-success">${formatIDR(p.realisasi)}</td></tr>`).join('');
+        document.querySelector("#modalTable tbody").innerHTML = filt.map(p => `<tr><td><span class="fw-bold text-dark">${p.satker}</span></td><td><span class="text-secondary">${p.kode}</span></td><td>${p.nama}</td><td><span class="badge bg-secondary">${p.metode}</span></td><td><span class="badge bg-info text-dark">${p.status}</span></td><td class="text-end">${formatIDR(p.pagu)}</td><td class="text-end fw-bold text-success">${formatIDR(p.realisasi)}</td></tr>`).join('');
         new bootstrap.Modal(document.getElementById('detailModal')).show();
     }
+
     function toggleCheckboxes(v) { document.querySelectorAll('.satker-cb').forEach(cb => cb.checked = v); filterTable(); }
   </script>
 </body>
