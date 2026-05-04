@@ -3,272 +3,1331 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring Pengadaan</title>
+  <title>Dashboard Monitoring Pengadaan — Kota Surakarta</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
   <style>
-    /* ... (Gunakan semua CSS dari Source 3 Anda) ... */
-    /* Tambahan CSS untuk Tab Navigasi */
-    
-    .nav-tabs {
-      display: flex;
-      background: var(--slate-100);
-      padding: 4px;
-      border-radius: 10px;
-      gap: 4px;
-      margin-right: 16px;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #2563eb;
+      --green:   #059669;
+      --purple:  #7c3aed;
+      --cyan:    #0891b2;
+      --amber:   #d97706;
+      --red:     #dc2626;
+      --slate-50:  #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+      --white: #ffffff;
+      --radius: 14px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow:    0 4px 16px rgba(0,0,0,.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
     }
 
-    .nav-link {
-      padding: 6px 16px;
-      border-radius: 7px;
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      font-size: 13px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── LOADER ─────────────────────────────────────── */
+    #loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--slate-900);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      transition: opacity .4s ease, visibility .4s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+
+    .loader-logo {
+      font-size: 13px; font-weight: 700; letter-spacing: 3px;
+      color: var(--slate-400); text-transform: uppercase;
+    }
+    .loader-bar-track {
+      width: 200px; height: 2px;
+      background: rgba(255,255,255,.1);
+      border-radius: 999px; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 999px;
+      transition: width .4s ease;
+    }
+    #loader-text { font-size: 12px; color: var(--slate-400); }
+
+    /* ─── TOPBAR ─────────────────────────────────────── */
+    #topbar {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      gap: 16px;
+    }
+
+    .topbar-title { display: flex; align-items: center; gap: 12px; }
+    .topbar-badge {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .topbar-label h1 { font-size: 14px; font-weight: 800; color: var(--slate-900); line-height: 1.2; }
+    .topbar-label p  { font-size: 11px; color: var(--slate-500); margin-top: 1px; }
+
+    .topbar-controls { display: flex; align-items: center; gap: 8px; }
+
+    select, input[type="text"] {
+      font-family: inherit; font-size: 12px;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 7px 12px;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .btn {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 7px 14px; border-radius: 8px; border: none;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,.3); }
+    .btn-ghost {
+      background: transparent; color: var(--slate-500);
+      border: 1px solid var(--slate-200);
+    }
+    .btn-ghost:hover { background: var(--slate-50); color: var(--slate-700); }
+
+    /* ─── MAIN WRAPPER ───────────────────────────────── */
+    #main-wrapper {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      padding: 16px 24px;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    /* ─── STAT CARDS ─────────────────────────────────── */
+    #cards-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .stat-card {
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 6px;
+      position: relative; overflow: hidden;
+      cursor: default;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .stat-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.08);
+      border-radius: inherit;
+    }
+    .stat-card .icon {
+      font-size: 20px; line-height: 1;
+      opacity: .85;
+    }
+    .stat-card .label {
+      font-size: 10px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; opacity: .75; color: #fff;
+    }
+    .stat-card .value {
+      font-size: 15px; font-weight: 800; color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.2;
+    }
+    .stat-card .sub {
+      font-size: 11px; font-weight: 500; color: rgba(255,255,255,.65);
+    }
+    .stat-card .stripe {
+      position: absolute; bottom: -10px; right: -10px;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: rgba(255,255,255,.07);
+    }
+
+    .card-rup     { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
+    .card-penyedia{ background: linear-gradient(135deg, #064e3b, #059669); }
+    .card-epurch  { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
+    .card-swak    { background: linear-gradient(135deg, #164e63, #0891b2); }
+    .card-real    { background: linear-gradient(135deg, #92400e, #d97706); }
+
+    /* ─── BOTTOM SECTION ─────────────────────────────── */
+    #bottom-section {
+      flex: 1; min-height: 0;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 12px;
+    }
+
+    /* ─── SIDE PANEL ─────────────────────────────────── */
+    #side-panel {
+      display: flex; flex-direction: column; gap: 12px;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-title {
+      font-size: 11px; font-weight: 800; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--slate-500);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--slate-100);
+      margin-bottom: 10px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-title-text { flex: 1; }
+    .filter-active-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: .3px;
+      background: var(--blue); color: #fff;
+      padding: 2px 6px; border-radius: 5px;
+      text-transform: uppercase;
+      display: none;
+    }
+    .filter-active-badge.show { display: inline-flex; }
+
+    /* Active filter indicator on toolbar */
+    .filter-chip {
+      display: none; align-items: center; gap: 4px;
+      background: #dbeafe; color: var(--blue);
+      border-radius: 6px; padding: 3px 8px;
+      font-size: 11px; font-weight: 600;
+    }
+    .filter-chip.show { display: flex; }
+    .filter-chip-close {
+      cursor: pointer; font-size: 13px; line-height: 1;
+      opacity: .7; transition: opacity .15s;
+    }
+    .filter-chip-close:hover { opacity: 1; }
+    .panel-body { overflow-y: auto; flex: 1; }
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+
+    .mini-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--slate-100);
+      gap: 8px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 700;
-      font-size: 12px;
-      color: var(--slate-500);
-      transition: all 0.2s;
+      transition: background .15s, transform .1s;
+      margin: 1px 0;
       user-select: none;
     }
+    .mini-row:last-child { border-bottom: none; }
+    .mini-row:hover { background: var(--slate-50); }
+    .mini-row.active {
+      background: #eff6ff;
+      border-bottom-color: transparent;
+      box-shadow: inset 0 0 0 1.5px var(--blue);
+    }
+    .mini-row.active .name { color: var(--blue); font-weight: 700; }
+    .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mini-row .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      padding: 2px 7px; border-radius: 6px;
+      white-space: nowrap;
+    }
 
-    .nav-link.active {
+    /* Status chips */
+    .chip-selesai  { background: #d1fae5; color: #065f46; }
+    .chip-berjalan { background: #dbeafe; color: #1e40af; }
+    .chip-belum    { background: #fef3c7; color: #92400e; }
+    .chip-default  { background: var(--slate-100); color: var(--slate-700); }
+
+    /* ─── MAIN TABLE PANEL ───────────────────────────── */
+    #table-panel {
       background: var(--white);
-      color: var(--blue);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .page-content {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      overflow: hidden;
-      gap: 14px;
-    }
-
-    .page-content.active {
-      display: flex;
-    }
-
-    /* Styling Page Perbandingan */
-    .comparison-grid {
-      display: grid;
-      grid-template-rows: 320px 1fr;
-      gap: 16px;
-      height: 100%;
-    }
-    
-    .chart-container {
-      background: white;
-      border-radius: var(--radius);
-      padding: 20px;
       border: 1px solid var(--slate-200);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    #table-toolbar {
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--slate-100);
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    #table-toolbar .toolbar-left { display: flex; align-items: center; gap: 8px; }
+    #toolbar-title { font-size: 12px; font-weight: 700; color: var(--slate-700); }
+    #toolbar-count {
+      font-size: 11px; font-weight: 600;
+      background: var(--slate-100); color: var(--slate-500);
+      padding: 2px 8px; border-radius: 6px;
+    }
+
+    #tbl-search {
+      width: 200px;
+    }
+
+    #table-wrap {
+      flex: 1; overflow-y: auto;
+    }
+    #table-wrap::-webkit-scrollbar { width: 5px; }
+    #table-wrap::-webkit-scrollbar-track { background: transparent; }
+    #table-wrap::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--slate-50);
+      font-size: 10px; font-weight: 800;
+      letter-spacing: .6px; text-transform: uppercase;
+      color: var(--slate-500);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--slate-200);
+      text-align: left;
+      user-select: none;
+    }
+    thead th.r { text-align: right; }
+    thead th.c { text-align: center; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--slate-100);
+      transition: background .12s;
+      cursor: pointer;
+    }
+    tbody tr:hover { background: #eff6ff; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr.active-row { background: #dbeafe; }
+
+    td {
+      padding: 10px 14px;
+      color: var(--slate-700);
+      vertical-align: middle;
+    }
+    td.r { text-align: right; }
+    td.c { text-align: center; }
+
+    .satker-name {
+      font-weight: 700; color: var(--slate-900);
+      font-size: 12px;
+    }
+    .satker-sub { font-size: 11px; color: var(--slate-400); margin-top: 1px; }
+
+    .badge-paket {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 28px; height: 22px; padding: 0 7px;
+      background: var(--slate-100); color: var(--slate-700);
+      font-size: 11px; font-weight: 700; border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .badge-jalan {
+      background: #dbeafe; color: var(--blue);
+    }
+
+    .money {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600;
+      color: var(--slate-800);
+    }
+
+    /* Progress bar in table */
+    .prog-wrap { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+    .prog-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; }
+    .prog-track {
+      width: 80px; height: 5px; background: var(--slate-200);
+      border-radius: 999px; overflow: hidden;
+    }
+    .prog-fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+    .pct-high   { color: var(--green); }
+    .pct-mid    { color: var(--amber); }
+    .pct-low    { color: var(--red); }
+    .fill-high  { background: var(--green); }
+    .fill-mid   { background: var(--amber); }
+    .fill-low   { background: var(--red); }
+
+    /* ─── MODAL ──────────────────────────────────────── */
+    #modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15,23,42,.5);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+    }
+    #modal-overlay.open { opacity: 1; visibility: visible; }
+
+    #modal-box {
+      background: var(--white);
+      border-radius: 18px;
+      width: 100%; max-width: 900px;
+      max-height: 85vh;
+      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      transform: scale(.96);
+      transition: transform .25s ease;
+      overflow: hidden;
+    }
+    #modal-overlay.open #modal-box { transform: scale(1); }
+
+    #modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    #modal-title { font-size: 14px; font-weight: 800; color: var(--slate-900); }
+    #modal-sub   { font-size: 11px; color: var(--slate-500); margin-top: 2px; }
+
+    #modal-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--slate-200); background: transparent;
+      cursor: pointer; font-size: 16px; color: var(--slate-500);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    #modal-close:hover { background: var(--slate-100); }
+
+    #modal-body { flex: 1; overflow-y: auto; }
+    #modal-body::-webkit-scrollbar { width: 5px; }
+    #modal-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+
+    #modal-body table thead th {
+      background: var(--slate-50);
+      font-size: 10px;
+    }
+
+    /* ─── EMPTY STATE ────────────────────────────────── */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 24px;
+      color: var(--slate-400);
+      gap: 8px;
+    }
+    .empty-state .icon { font-size: 36px; opacity: .4; }
+    .empty-state p { font-size: 13px; font-weight: 500; }
+
+    /* ─── TOAST ──────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--slate-900); color: #fff;
+      padding: 10px 16px; border-radius: 10px;
+      font-size: 12px; font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 8px;
+      transform: translateY(16px); opacity: 0;
+      transition: all .25s ease;
+      pointer-events: none; z-index: 9998;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ─── ERROR STATE ────────────────────────────────── */
+    #error-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 8000;
+      background: var(--slate-50);
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0;
+    }
+    #error-overlay.show { display: flex; }
+
+    .error-card {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 20px;
+      padding: 48px 56px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 16px;
+      box-shadow: var(--shadow-lg);
+      max-width: 480px; width: 90%;
+      text-align: center;
+    }
+    .error-icon-wrap {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: #fef2f2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+    .error-title {
+      font-size: 18px; font-weight: 800;
+      color: var(--slate-900); line-height: 1.3;
+    }
+    .error-desc {
+      font-size: 13px; color: var(--slate-500);
+      line-height: 1.6; max-width: 340px;
+    }
+    .error-detail {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 8px 14px;
+      width: 100%; word-break: break-word;
+      line-height: 1.5;
+    }
+    .error-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .error-btn-retry {
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      padding: 10px 24px; border-radius: 10px; border: none;
+      background: var(--blue); color: #fff;
+      cursor: pointer; transition: background .18s, box-shadow .18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .error-btn-retry:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,.3); }
+    .error-btn-dismiss {
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 10px 20px; border-radius: 10px;
+      border: 1px solid var(--slate-200); background: transparent;
+      color: var(--slate-500); cursor: pointer; transition: background .15s;
+    }
+    .error-btn-dismiss:hover { background: var(--slate-100); }
+
+    /* ─── SATKER DROPDOWN ───────────────────────────── */
+    #satker-dropdown-wrap {
       position: relative;
+    }
+    #satker-btn {
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 7px 12px;
+      background: var(--slate-50);
+      color: var(--slate-700);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+      min-width: 110px;
+      transition: border-color .2s, box-shadow .2s;
+      user-select: none;
+    }
+    #satker-btn:hover { border-color: var(--blue); }
+    #satker-btn.open {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    #satker-btn .btn-count {
+      background: var(--blue); color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 5px; border-radius: 4px;
+      display: none;
+    }
+    #satker-btn .btn-count.show { display: inline-flex; }
+    #satker-btn .arrow { margin-left: auto; font-size: 10px; color: var(--slate-400); transition: transform .2s; }
+    #satker-btn.open .arrow { transform: rotate(180deg); }
+
+    #satker-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 280px;
+      max-height: 340px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      z-index: 500;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #satker-dropdown.open { display: flex; }
+
+    #satker-search-wrap {
+      padding: 10px 10px 6px;
+      border-bottom: 1px solid var(--slate-100);
+      flex-shrink: 0;
+    }
+    #satker-search {
+      width: 100%; font-family: inherit; font-size: 12px;
+      border: 1px solid var(--slate-200); border-radius: 7px;
+      padding: 6px 10px; background: var(--slate-50);
+      color: var(--slate-900); outline: none;
+    }
+    #satker-search:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(37,99,235,.1); }
+
+    #satker-actions {
+      padding: 6px 10px;
+      display: flex; gap: 6px;
+      border-bottom: 1px solid var(--slate-100);
+      flex-shrink: 0;
+    }
+    .satker-action-btn {
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      padding: 4px 9px; border-radius: 6px; border: none; cursor: pointer;
+      transition: background .15s;
+    }
+    .satker-action-btn.all { background: var(--slate-100); color: var(--slate-600); }
+    .satker-action-btn.all:hover { background: var(--slate-200); }
+    .satker-action-btn.clear { background: #fee2e2; color: #b91c1c; }
+    .satker-action-btn.clear:hover { background: #fecaca; }
+
+    #satker-list {
+      overflow-y: auto; flex: 1;
+      padding: 6px 6px;
+    }
+    #satker-list::-webkit-scrollbar { width: 4px; }
+    #satker-list::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+
+    .satker-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px; border-radius: 7px;
+      cursor: pointer; transition: background .12s;
+      font-size: 12px; color: var(--slate-700); font-weight: 500;
+    }
+    .satker-item:hover { background: var(--slate-50); }
+    .satker-item.checked { background: #eff6ff; color: var(--blue); font-weight: 600; }
+    .satker-item .cb {
+      width: 15px; height: 15px; border-radius: 4px; flex-shrink: 0;
+      border: 1.5px solid var(--slate-300);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; transition: all .15s;
+    }
+    .satker-item.checked .cb {
+      background: var(--blue); border-color: var(--blue); color: #fff;
+    }
+    .satker-item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    @media print {
+      #topbar .topbar-controls, #table-toolbar .btn, #tbl-search,
+      #modal-overlay, #toast, #loader { display: none !important; }
+      body { overflow: visible; height: auto; }
+      #main-wrapper { overflow: visible; }
     }
   </style>
 </head>
 <body>
 
+<!-- ── LOADER ──────────────────────────────────────────── -->
 <div id="loader">
   <div class="loader-logo">BPBJ · Kota Surakarta</div>
-  <div class="loader-bar-track"><div class="loader-bar-fill" id="loader-bar"></div></div>
-  <div id="loader-text">Memuat sistem...</div>
+  <div class="loader-bar-track">
+    <div class="loader-bar-fill" id="loader-bar"></div>
+  </div>
+  <div id="loader-text">Memuat data pengadaan…</div>
 </div>
 
+<!-- ── TOPBAR ──────────────────────────────────────────── -->
 <div id="topbar">
   <div class="topbar-title">
     <div class="topbar-badge">📊</div>
     <div class="topbar-label">
-      <h1>Dashboard Monitoring</h1>
-      <p>Monitoring RUP & Realisasi</p>
+      <h1>Dashboard Monitoring Pengadaan</h1>
+      <p>Realisasi Barang/Jasa Pemerintah Kota Surakarta</p>
     </div>
   </div>
-
   <div class="topbar-controls">
-    <div class="nav-tabs">
-      <div class="nav-link active" onclick="switchPage('dashboard', this)">Dashboard</div>
-      <div class="nav-link" onclick="switchPage('perbandingan', this)">Perbandingan</div>
-    </div>
-
-    <div id="dashboard-controls" class="topbar-controls">
-        <div id="satker-dropdown-wrap">
-            <div id="satker-btn" onclick="toggleSatkerDropdown()">
-              <span>🏛 Satker</span>
-              <span class="btn-count" id="satker-count"></span>
-              <span class="arrow">▼</span>
-            </div>
-            <div id="satker-dropdown">
-              <div id="satker-search-wrap"><input type="text" id="satker-search" placeholder="Cari satker..." oninput="renderSatkerList()"></div>
-              <div id="satker-actions">
-                <button class="satker-action-btn all" onclick="selectAllSatker()">Semua</button>
-                <button class="satker-action-btn clear" onclick="clearSatkerFilter()">Hapus</button>
-              </div>
-              <div id="satker-list"></div>
-            </div>
+    <!-- SATKER MULTI-SELECT -->
+    <div id="satker-dropdown-wrap">
+      <div id="satker-btn" onclick="toggleSatkerDropdown()">
+        <span>🏛 Satker</span>
+        <span class="btn-count" id="satker-count"></span>
+        <span class="arrow">▼</span>
+      </div>
+      <div id="satker-dropdown">
+        <div id="satker-search-wrap">
+          <input type="text" id="satker-search" placeholder="🔍 Cari satker…" oninput="renderSatkerList()" autocomplete="off">
         </div>
-        <select id="selBulan" onchange="refreshData()"></select>
+        <div id="satker-actions">
+          <button class="satker-action-btn all" onclick="selectAllSatker()">Pilih Semua</button>
+          <button class="satker-action-btn clear" onclick="clearSatkerFilter()">Hapus Pilihan</button>
+        </div>
+        <div id="satker-list"></div>
+      </div>
     </div>
-
-    <button class="btn btn-primary" onclick="handleRefresh()">↺ Segarkan</button>
+    <select id="selBulan" onchange="refreshData()"></select>
+    <button class="btn btn-ghost" onclick="window.print()">🖨 Cetak</button>
+    <button class="btn btn-primary" onclick="refreshData()">↺ Segarkan</button>
   </div>
 </div>
 
+<!-- ── MAIN ─────────────────────────────────────────────── -->
 <div id="main-wrapper">
-  
-  <div id="page-dashboard" class="page-content active">
-    <div id="cards-row">
-        <div class="stat-card card-rup"><div class="label">Total Pagu RUP</div><div class="value" id="c-rup">Rp 0</div><div class="sub" id="c-rup-sub">0 Paket</div></div>
-        <div class="stat-card card-penyedia"><div class="label">Penyedia</div><div class="value" id="c-penyedia">Rp 0</div><div class="sub" id="c-penyedia-sub">0 Paket</div></div>
-        <div class="stat-card card-epurch"><div class="label">E-Purchasing</div><div class="value" id="c-epurch">Rp 0</div><div class="sub" id="c-epurch-sub">0 Paket</div></div>
-        <div class="stat-card card-swak"><div class="label">Swakelola</div><div class="value" id="c-swak">Rp 0</div><div class="sub" id="c-swak-sub">0 Paket</div></div>
-        <div class="stat-card card-real"><div class="label">Total Realisasi</div><div class="value" id="c-real">Rp 0</div><div class="sub" id="c-real-sub">0 Paket</div></div>
-    </div>
 
-    <div id="bottom-section">
-      <div id="side-panel">
-        <div class="panel">
-            <div class="panel-title">Metode Pemilihan</div>
-            <div class="panel-body" id="panel-metode"></div>
-        </div>
-        <div class="panel">
-            <div class="panel-title">Status Paket</div>
-            <div class="panel-body" id="panel-status"></div>
-        </div>
-      </div>
-      <div id="table-panel">
-        <div id="table-toolbar">
-            <div class="toolbar-left"><span id="toolbar-title">Rekap Per Satker</span> <span id="toolbar-count">0 Satker</span></div>
-            <input type="text" id="tbl-search" placeholder="Cari satker..." oninput="filterTable()">
-        </div>
-        <div id="table-wrap">
-            <table>
-                <thead><tr><th>Satuan Kerja</th><th class="c">Paket</th><th class="c">Berjalan</th><th class="r">Pagu RUP</th><th class="r">Realisasi</th></tr></thead>
-                <tbody id="satkerBody"></tbody>
-            </table>
-        </div>
-      </div>
+  <!-- CARDS -->
+  <div id="cards-row">
+    <div class="stat-card card-rup">
+      <div class="icon">📋</div>
+      <div class="label">Total Pagu RUP</div>
+      <div class="value" id="c-rup">Rp 0</div>
+      <div class="sub" id="c-rup-sub">0 Paket</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-penyedia">
+      <div class="icon">🏢</div>
+      <div class="label">Paket Penyedia</div>
+      <div class="value" id="c-penyedia">Rp 0</div>
+      <div class="sub" id="c-penyedia-sub">0 Paket</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-epurch">
+      <div class="icon">🛒</div>
+      <div class="label">E-Purchasing</div>
+      <div class="value" id="c-epurch">Rp 0</div>
+      <div class="sub" id="c-epurch-sub">0 Transaksi</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-swak">
+      <div class="icon">🏗</div>
+      <div class="label">Paket Swakelola</div>
+      <div class="value" id="c-swak">Rp 0</div>
+      <div class="sub" id="c-swak-sub">0 Paket</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-real">
+      <div class="icon">✅</div>
+      <div class="label">Total Realisasi</div>
+      <div class="value" id="c-real">Rp 0</div>
+      <div class="sub" id="c-real-sub">0 Paket Selesai</div>
+      <div class="stripe"></div>
     </div>
   </div>
 
-  <div id="page-perbandingan" class="page-content">
-    <div class="comparison-grid">
-        <div class="chart-container">
-            <canvas id="comparisonChart"></canvas>
+  <!-- BOTTOM -->
+  <div id="bottom-section">
+
+    <!-- SIDE PANEL -->
+    <div id="side-panel">
+      <div class="panel" style="flex: 1;">
+        <div class="panel-title">
+          <span class="panel-title-text">Metode Pemilihan</span>
+          <span class="filter-active-badge" id="badge-metode">Aktif</span>
         </div>
-        <div class="panel" style="flex:1">
-            <div class="panel-title">Tabel Perbandingan Serapan Per Bulan</div>
-            <div id="table-wrap">
-                <table>
-                    <thead class="sticky-top">
-                        <tr>
-                            <th>Bulan</th>
-                            <th class="r">Total Pagu (RUP)</th>
-                            <th class="r">Total Realisasi</th>
-                            <th class="c">Prosentase</th>
-                        </tr>
-                    </thead>
-                    <tbody id="comparisonTableBody"></tbody>
-                </table>
-            </div>
+        <div class="panel-body" id="panel-metode">
+          <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
         </div>
+      </div>
+      <div class="panel" style="flex: 1;">
+        <div class="panel-title">
+          <span class="panel-title-text">Status Paket</span>
+          <span class="filter-active-badge" id="badge-status">Aktif</span>
+        </div>
+        <div class="panel-body" id="panel-status">
+          <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN TABLE PANEL -->
+    <div id="table-panel">
+      <div id="table-toolbar">
+        <div class="toolbar-left">
+          <span id="toolbar-title">Rekap per Satuan Kerja</span>
+          <span id="toolbar-count">0 Satker</span>
+          <span class="filter-chip" id="chip-metode">
+            <span id="chip-metode-label"></span>
+            <span class="filter-chip-close" onclick="clearFilter('metode')">✕</span>
+          </span>
+          <span class="filter-chip" id="chip-status">
+            <span id="chip-status-label"></span>
+            <span class="filter-chip-close" onclick="clearFilter('status')">✕</span>
+          </span>
+        </div>
+        <input type="text" id="tbl-search" placeholder="🔍  Cari satker…" oninput="filterTable()">
+      </div>
+      <div id="table-wrap">
+        <table id="satkerTable">
+          <thead>
+            <tr>
+              <th style="width:38%">Satuan Kerja</th>
+              <th class="c">Paket</th>
+              <th class="c">Berjalan</th>
+              <th class="r">Pagu RUP</th>
+              <th class="r">Realisasi / Serapan</th>
+            </tr>
+          </thead>
+          <tbody id="satkerBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- ── MODAL ─────────────────────────────────────────────── -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal-box">
+    <div id="modal-header">
+      <div>
+        <div id="modal-title">Rincian Paket</div>
+        <div id="modal-sub"></div>
+      </div>
+      <button id="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Kode RUP</th>
+            <th>Nama Paket</th>
+            <th>Metode</th>
+            <th>Status</th>
+            <th class="r">Pagu</th>
+            <th class="r">Realisasi</th>
+          </tr>
+        </thead>
+        <tbody id="modalBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ERROR OVERLAY ──────────────────────────────────────── -->
+<div id="error-overlay">
+  <div class="error-card">
+    <div class="error-icon-wrap">⚠️</div>
+    <div class="error-title">Data Belum Tersedia</div>
+    <div class="error-desc">
+      Gagal memuat data pengadaan. Pastikan koneksi internet aktif dan sumber data tersedia.
+    </div>
+    <div class="error-detail" id="error-detail-msg">—</div>
+    <div class="error-actions">
+      <button class="error-btn-retry" onclick="retryLoad()">↺ Coba Lagi</button>
+      <button class="error-btn-dismiss" onclick="dismissError()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────── -->
+<div id="toast"></div>
 
 <script>
-  // ... (Gunakan Fungsi Utils, Formatting, dan Variable dari Source 3) ...
-  let myChart = null;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby9jWZ1fTjL6XNLT8gtTgCCr2bLlW4DYnTTZnLkoaQ8PzzYMzX-A3e98OwnhqpmLdlIUA/exec";
 
-  function switchPage(page, el) {
-    // Nav UI
-    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
+  const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
+                      "Juli","Agustus","September","Oktober","November","Desember"];
 
-    // Content UI
-    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
+  let allData   = [];
+  let allPkg    = [];
+  let activeRow = null;
 
-    // Controls visibility
-    document.getElementById('dashboard-controls').style.display = (page === 'dashboard') ? 'flex' : 'none';
+  // ── FILTER STATE ─────────────────────────────────────────
+  let activeFilterMetode = null;  // string or null
+  let activeFilterStatus = null;  // string or null
+  let selectedSatkers    = new Set(); // empty = semua satker tampil
 
-    if (page === 'perbandingan') {
-      loadComparisonData();
-    }
-  }
+  // ── INIT ────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('selBulan');
+    const cur = new Date().getMonth(); // 0-indexed
+    BULAN_LIST.forEach((b, i) => {
+      const o = document.createElement('option');
+      o.value = b; o.textContent = b;
+      if (i === cur) o.selected = true;
+      sel.appendChild(o);
+    });
+    refreshData();
+  });
 
-  function handleRefresh() {
-    const isComparison = document.getElementById('page-perbandingan').classList.contains('active');
-    if (isComparison) loadComparisonData();
-    else refreshData();
-  }
+  // ── FETCH ────────────────────────────────────────────────
+  async function refreshData() {
+    const bulan = document.getElementById('selBulan').value;
 
-  async function loadComparisonData() {
+    // Reset filter state on new data load
+    activeFilterMetode = null;
+    activeFilterStatus = null;
+    selectedSatkers    = new Set();
+    updateFilterUI();
+
     showLoader(true);
-    setLoaderProgress(30, 'Mengambil tren tahunan...');
-    
+    setLoaderProgress(10, 'Menghubungi server…');
+
     try {
-      const res = await fetch(`${GAS_URL}?action=getComparison`);
-      const data = await res.json();
-      
-      renderComparisonChart(data);
-      renderComparisonTable(data);
-      
-      showLoader(false);
+      const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
+      setLoaderProgress(30, 'Mengambil data RUP & Realisasi…');
+      const res  = await fetch(url);
+      setLoaderProgress(65, 'Memproses data…');
+      const json = await res.json();
+
+      if (json.error) throw new Error(json.error);
+
+      allData = json.rekapSatker || [];
+      allPkg  = json.allPackages  || [];
+
+      setLoaderProgress(85, 'Merender dashboard…');
+      buildCards(allData, allPkg);
+      buildSidePanel(allPkg);
+      buildSatkerDropdown(allData);
+      renderTable(allData);
+      setLoaderProgress(100, 'Selesai!');
+
+      setTimeout(() => showLoader(false), 300);
+      toast(`✅ Data ${bulan} berhasil dimuat — ${allData.length} satker`);
     } catch (e) {
-      showLoader(false);
-      toast('Gagal memuat data perbandingan', true);
+      setLoaderProgress(100, '');
+      setTimeout(() => showLoader(false), 200);
+      showError(e.message);
     }
   }
 
-  function renderComparisonChart(data) {
-    const ctx = document.getElementById('comparisonChart').getContext('2d');
-    const labels = data.map(d => d.bulan);
-    const paguData = data.map(d => d.pagu);
-    const realData = data.map(d => d.realisasi);
+  // ── LOADER HELPERS ───────────────────────────────────────
+  function showLoader(v) {
+    const l = document.getElementById('loader');
+    v ? l.classList.remove('hidden') : l.classList.add('hidden');
+  }
+  function setLoaderProgress(pct, msg) {
+    document.getElementById('loader-bar').style.width  = pct + '%';
+    if (msg) document.getElementById('loader-text').textContent = msg;
+  }
 
-    if (myChart) myChart.destroy();
+  // ── ERROR OVERLAY ────────────────────────────────────────
+  function showError(msg) {
+    document.getElementById('error-detail-msg').textContent = msg || 'Kesalahan tidak diketahui.';
+    document.getElementById('error-overlay').classList.add('show');
+  }
+  function dismissError() {
+    document.getElementById('error-overlay').classList.remove('show');
+  }
+  function retryLoad() {
+    dismissError();
+    refreshData();
+  }
 
-    myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: 'Total Pagu', data: paguData, backgroundColor: '#e2e8f0', borderRadius: 5 },
-          { label: 'Total Realisasi', data: realData, backgroundColor: '#2563eb', borderRadius: 5 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: {
-          y: { 
-            beginAtZero: true,
-            ticks: { callback: value => fmt(value) } 
-          }
-        }
-      }
+  // ── CARDS ────────────────────────────────────────────────
+  function buildCards(satkers, pkgs) {
+    const totRUP   = satkers.reduce((a, s) => a + s.nilaiRUP, 0);
+    const totPaket = satkers.reduce((a, s) => a + s.totalPaket, 0);
+
+    const penyedia = satkers.reduce((a, s) => ({
+      v: a.v + s.caraPengadaan.Penyedia.nilai,
+      c: a.c + s.caraPengadaan.Penyedia.count
+    }), { v: 0, c: 0 });
+
+    const swak = satkers.reduce((a, s) => ({
+      v: a.v + s.caraPengadaan.Swakelola.nilai,
+      c: a.c + s.caraPengadaan.Swakelola.count
+    }), { v: 0, c: 0 });
+
+    // E-Purchasing: metode 'E-Purchasing' atau 'e-Purchasing'
+    const ep = pkgs.filter(p => /e[\-\s]?purchasing/i.test(p.metode));
+    const epNilai = ep.reduce((a, p) => a + p.pagu, 0);
+
+    const selesai = satkers.reduce((a, s) => ({
+      v: a.v + s.progresStatus.Selesai.nilai,
+      c: a.c + s.progresStatus.Selesai.count
+    }), { v: 0, c: 0 });
+
+    setText('c-rup',          fmt(totRUP));
+    setText('c-rup-sub',      `${totPaket} Paket`);
+    setText('c-penyedia',     fmt(penyedia.v));
+    setText('c-penyedia-sub', `${penyedia.c} Paket`);
+    setText('c-epurch',       fmt(epNilai));
+    setText('c-epurch-sub',   `${ep.length} Transaksi`);
+    setText('c-swak',         fmt(swak.v));
+    setText('c-swak-sub',     `${swak.c} Paket`);
+    setText('c-real',         fmt(selesai.v));
+    setText('c-real-sub',     `${selesai.c} Paket Selesai`);
+  }
+
+  // ── SIDE PANEL ───────────────────────────────────────────
+  /**
+   * Aturan prioritas filter:
+   * 1. Metode Pemilihan adalah filter UTAMA.
+   * 2. Jika metode aktif → Status Paket hanya menampilkan
+   *    status dari paket dalam metode tersebut.
+   * 3. Jika metode TIDAK aktif → Status Paket tampilkan semua.
+   * 4. Jika metode di-reset → status aktif juga ikut di-reset.
+   * 5. Nama metode "-" ditampilkan sebagai "Swakelola".
+   */
+  function normMetode(m) {
+    return (!m || m.trim() === '-') ? 'Swakelola' : m.trim();
+  }
+
+  function buildSidePanel(pkgs) {
+    // ── Metode: selalu dari semua paket ──────────────────
+    const metodeMap = {};
+    pkgs.forEach(p => {
+      const m = normMetode(p.metode);
+      if (!metodeMap[m]) metodeMap[m] = { count: 0, nilai: 0 };
+      metodeMap[m].count++;
+      metodeMap[m].nilai += p.pagu;
+    });
+    const metodes = Object.entries(metodeMap).sort((a, b) => b[1].nilai - a[1].nilai);
+
+    const pmEl = document.getElementById('panel-metode');
+    pmEl.innerHTML = '';
+    metodes.forEach(([name, d]) => {
+      const row = document.createElement('div');
+      row.className = 'mini-row' + (activeFilterMetode === name ? ' active' : '');
+      row.title = `Klik untuk filter: ${name}`;
+      row.innerHTML = `
+        <span class="name">${name}</span>
+        <span class="chip chip-default">${d.count} pkt</span>
+      `;
+      row.addEventListener('click', () => toggleFilterMetode(name));
+      pmEl.appendChild(row);
+    });
+    if (!metodes.length) pmEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+
+    // ── Status: jika metode aktif → filter, jika tidak → semua ─
+    const pkgsForStatus = activeFilterMetode
+      ? pkgs.filter(p => normMetode(p.metode) === activeFilterMetode)
+      : pkgs;
+
+    const statusMap = {};
+    pkgsForStatus.forEach(p => {
+      const s = p.status || 'Belum Realisasi';
+      if (!statusMap[s]) statusMap[s] = { count: 0, nilai: 0 };
+      statusMap[s].count++;
+      statusMap[s].nilai += p.realisasi;
+    });
+    const statuses = Object.entries(statusMap).sort((a, b) => b[1].count - a[1].count);
+
+    const psEl = document.getElementById('panel-status');
+    psEl.innerHTML = '';
+
+    statuses.forEach(([name, d]) => {
+      const chipClass = /selesai/i.test(name) ? 'chip-selesai'
+                      : /berjalan|proses/i.test(name) ? 'chip-berjalan'
+                      : /belum/i.test(name) ? 'chip-belum' : 'chip-default';
+      const row = document.createElement('div');
+      row.className = 'mini-row' + (activeFilterStatus === name ? ' active' : '');
+      row.title = `Klik untuk filter: ${name}`;
+      row.innerHTML = `
+        <span class="name">${name}</span>
+        <span class="chip ${chipClass}">${d.count}</span>
+      `;
+      row.addEventListener('click', () => toggleFilterStatus(name));
+      psEl.appendChild(row);
+    });
+    if (!statuses.length) psEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+  }
+
+  // ── FILTER TOGGLE METODE (UTAMA) ────────────────────────
+  function toggleFilterMetode(name) {
+    if (activeFilterMetode === name) {
+      activeFilterMetode = null;
+      activeFilterStatus = null;
+    } else {
+      activeFilterMetode = name;
+      activeFilterStatus = null;
+    }
+    updateFilterUI();
+    filterTable();
+    buildSidePanel(allPkg);
+  }
+
+  // ── FILTER TOGGLE STATUS (TURUNAN) ──────────────────────
+  function toggleFilterStatus(name) {
+    activeFilterStatus = activeFilterStatus === name ? null : name;
+    updateFilterUI();
+    filterTable();
+    buildSidePanel(allPkg);
+  }
+
+  // ── CLEAR FILTER ─────────────────────────────────────────
+  function clearFilter(type) {
+    if (type === 'metode') {
+      activeFilterMetode = null;
+      activeFilterStatus = null;
+    }
+    if (type === 'status') activeFilterStatus = null;
+    updateFilterUI();
+    filterTable();
+    buildSidePanel(allPkg);
+  }
+
+  // ── UPDATE FILTER UI (chips + badges) ───────────────────
+  function updateFilterUI() {
+    const chipMetode  = document.getElementById('chip-metode');
+    const chipStatus  = document.getElementById('chip-status');
+    const labelMetode = document.getElementById('chip-metode-label');
+    const labelStatus = document.getElementById('chip-status-label');
+    const badgeMetode = document.getElementById('badge-metode');
+    const badgeStatus = document.getElementById('badge-status');
+
+    if (activeFilterMetode) {
+      labelMetode.textContent = '⚡ ' + activeFilterMetode;
+      chipMetode.classList.add('show');
+      badgeMetode.classList.add('show');
+    } else {
+      chipMetode.classList.remove('show');
+      badgeMetode.classList.remove('show');
+    }
+
+    if (activeFilterStatus) {
+      labelStatus.textContent = '⚡ ' + activeFilterStatus;
+      chipStatus.classList.add('show');
+      badgeStatus.classList.add('show');
+    } else {
+      chipStatus.classList.remove('show');
+      badgeStatus.classList.remove('show');
+    }
+  }
+
+  // ── SATKER DROPDOWN ──────────────────────────────────────
+  function buildSatkerDropdown(satkers) {
+    selectedSatkers = new Set();
+    updateSatkerBtn();
+    renderSatkerList();
+  }
+
+  function toggleSatkerDropdown() {
+    const btn = document.getElementById('satker-btn');
+    const dd  = document.getElementById('satker-dropdown');
+    const open = dd.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    if (open) {
+      document.getElementById('satker-search').value = '';
+      renderSatkerList();
+      document.getElementById('satker-search').focus();
+    }
+  }
+
+  function renderSatkerList() {
+    const q   = document.getElementById('satker-search').value.toLowerCase();
+    const el  = document.getElementById('satker-list');
+    el.innerHTML = '';
+
+    // Filter allData by active satker filter first for the satker names list
+    const names = allData.map(s => s.namaSatker).filter(n => !q || n.toLowerCase().includes(q));
+
+    if (!names.length) {
+      el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--slate-400);font-size:12px;">Tidak ditemukan</div>';
+      return;
+    }
+
+    names.forEach(name => {
+      const checked = selectedSatkers.has(name);
+      const item = document.createElement('div');
+      item.className = 'satker-item' + (checked ? ' checked' : '');
+      item.innerHTML = `
+        <div class="cb">${checked ? '✓' : ''}</div>
+        <span class="item-name" title="${name}">${name}</span>
+      `;
+      item.addEventListener('click', () => toggleSatkerItem(name));
+      el.appendChild(item);
     });
   }
 
-  function renderComparisonTable(data) {
-    const tbody = document.getElementById('comparisonTableBody');
-    tbody.innerHTML = data.map(d => `
-      <tr>
-        <td class="fw-bold">${d.bulan}</td>
-        <td class="r money">${fmt(d.pagu)}</td>
-        <td class="r money text-primary">${fmt(d.realisasi)}</td>
-        <td class="c">
-          <div class="prog-wrap">
-            <span class="prog-pct">${d.persen.toFixed(1)}%</span>
-            <div class="prog-track"><div class="prog-fill fill-high" style="width:${Math.min(d.persen,100)}%"></div></div>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+  function toggleSatkerItem(name) {
+    if (selectedSatkers.has(name)) selectedSatkers.delete(name);
+    else selectedSatkers.add(name);
+    updateSatkerBtn();
+    renderSatkerList();
+    filterTable();
   }
 
-  // Masukkan fungsi refreshData(), openModal(), buildCards() dll dari Source 3 anda di bawah sini.
-  // Jangan lupa ganti link GAS_URL dengan link hasil New Deployment anda.
+  function selectAllSatker() {
+    allData.forEach(s => selectedSatkers.add(s.namaSatker));
+    updateSatkerBtn();
+    renderSatkerList();
+    filterTable();
+  }
+
+  function clearSatkerFilter() {
+    selectedSatkers.clear();
+    updateSatkerBtn();
+    renderSatkerList();
+    filterTable();
+  }
+
+  function updateSatkerBtn() {
+    const countEl = document.getElementById('satker-count');
+    const n = selectedSatkers.size;
+    if (n > 0) {
+      countEl.textContent = n;
+      countEl.classList.add('show');
+    } else {
+      countEl.classList.remove('show');
+    }
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('satker-dropdown-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('satker-dropdown').classList.remove('open');
+      document.getElementById('satker-btn').classList.remove('open');
+    }
+  });
+
+  // ── MAIN TABLE ───────────────────────────────────────────
+  function renderTable(data) {
+    const tbody = document.getElementById('satkerBody');
+    tbody.innerHTML = '';
+    document.getElementById('toolbar-count').textContent = `${data.length} Satker`;
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
+      return;
+    }
+
+    data.forEach(s => {
+      const pct = s.nilaiRUP > 0 ? (s.nilaiReal / s.nilaiRUP * 100) : 0;
+      const pctStr = pct.toFixed(1) + '%';
+      const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
+
+      const tr = document.createElement('tr');
+      tr.dataset.satker = s.namaSatker;
+      tr.innerHTML = `
+        <td>
+          <div class="satker-name">${s.namaSatker}</div>
+          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket dilaksanakan</div>
+        </td>
+        <td class="c"><span class="badge-paket">${s.totalPaket}</span></td>
+        <td class="c"><span class="badge-paket badge-jalan">${s.dilaksanakan}</span></td>
+        <td class="r"><span class="money">${fmt(s.nilaiRUP)}</span></td>
+        <td class="r">
+          <div class="prog-wrap">
+            <span class="money" style="font-size:11px;">${fmt(s.nilaiReal)}</span>
+            <span class="prog-pct pct-${colorClass}">${pctStr}</span>
+            <div class="prog-track"><div class="prog-fill fill-${colorClass}" style="width:${Math.min(pct,100)}%"></div></div>
+          </div>
+        </td>
+      `;
+      tr.addEventListener('click', () => openModal(s));
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── FILTER ───────────────────────────────────────────────
+  function filterTable() {
+    const q = document.getElementById('tbl-search').value.toLowerCase();
+
+    let filtered = allData;
+
+    // 1. Filter satker dropdown (multi-select)
+    if (selectedSatkers.size > 0) {
+      filtered = filtered.filter(s => selectedSatkers.has(s.namaSatker));
+    }
+
+    // 2. Filter metode & status dari side panel
+    if (activeFilterMetode || activeFilterStatus) {
+      const matchingSatkers = new Set();
+      allPkg.forEach(p => {
+        const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
+        const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+        if (metodeMatch && statusMatch) matchingSatkers.add(p.satker);
+      });
+      filtered = filtered.filter(s => matchingSatkers.has(s.namaSatker));
+    }
+
+    // 3. Search teks satker
+    if (q) {
+      filtered = filtered.filter(s => s.namaSatker.toLowerCase().includes(q));
+    }
+
+    renderTable(filtered);
+  }
+
+  // ── MODAL ────────────────────────────────────────────────
+  function openModal(satker) {
+    document.getElementById('modal-title').textContent = satker.namaSatker;
+
+    let pkgs = allPkg.filter(p => p.satker === satker.namaSatker);
+
+    // Apply active panel filters inside modal too
+    const hasFilter = activeFilterMetode || activeFilterStatus;
+    if (hasFilter) {
+      pkgs = pkgs.filter(p => {
+        const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
+        const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+        return metodeMatch && statusMatch;
+      });
+    }
+
+    const totalPkgs = allPkg.filter(p => p.satker === satker.namaSatker).length;
+    const filterNote = hasFilter ? ` · (${pkgs.length} dari ${totalPkgs} paket ditampilkan)` : '';
+    document.getElementById('modal-sub').textContent =
+      `${satker.totalPaket} paket · Pagu ${fmt(satker.nilaiRUP)} · Realisasi ${fmt(satker.nilaiReal)}${filterNote}`;
+
+    const tbody = document.getElementById('modalBody');
+    tbody.innerHTML = '';
+
+    if (!pkgs.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data paket</p></div></td></tr>`;
+    } else {
+      pkgs.forEach(p => {
+        const chipClass = /selesai/i.test(p.status) ? 'chip-selesai'
+                        : /berjalan|proses/i.test(p.status) ? 'chip-berjalan'
+                        : /belum/i.test(p.status) ? 'chip-belum' : 'chip-default';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate-500)">${p.kode || '—'}</td>
+          <td style="max-width:260px;word-break:break-word">${p.nama || '—'}</td>
+          <td>${p.metode || '—'}</td>
+          <td><span class="chip ${chipClass}">${p.status}</span></td>
+          <td class="r"><span class="money">${fmt(p.pagu)}</span></td>
+          <td class="r"><span class="money">${fmt(p.realisasi)}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.getElementById('modal-close')) return;
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('modal-overlay').classList.remove('open');
+  });
+
+  // ── UTILS ────────────────────────────────────────────────
+  function fmt(n) {
+    if (!n || isNaN(n)) return 'Rp 0';
+    if (n >= 1e9)  return 'Rp ' + (n / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
+    if (n >= 1e6)  return 'Rp ' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
+    return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  let toastTimer;
+  function toast(msg, isErr = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = isErr ? '#dc2626' : '#0f172a';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
 </script>
 </body>
 </html>
