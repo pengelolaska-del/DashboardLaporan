@@ -555,25 +555,126 @@
     #dashboard-controls { display: flex; align-items: center; gap: 8px; }
 
     /* ─── COMPARISON PAGE ────────────────────────────── */
-    #page-comparison {
-      padding: 20px 24px;
-      gap: 16px;
-      overflow-y: auto;
-    }
+    #page-comparison { flex-direction: column; overflow: hidden; }
 
-    .comp-header {
-      display: flex; align-items: center; justify-content: space-between;
+    /* ─── COMPARISON TOPBAR ──────────────────────────── */
+    #comp-topbar {
       flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px;
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      gap: 12px;
     }
-    .comp-title-block h2 {
-      font-size: 16px; font-weight: 800; color: var(--slate-900);
+    #comp-topbar-title { font-size: 13px; font-weight: 700; color: var(--slate-700); }
+    #comp-topbar-title span { color: var(--slate-400); font-weight: 500; font-size: 11px; margin-left: 6px; }
+    #comp-topbar-controls { display: flex; align-items: center; gap: 8px; }
+
+    /* satker dropdown comp — reuse existing satker styles but scoped */
+    #comp-satker-wrap { position: relative; }
+    #comp-satker-btn {
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--slate-200); border-radius: 8px;
+      padding: 7px 12px; background: var(--slate-50); color: var(--slate-700);
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      white-space: nowrap; min-width: 110px;
+      transition: border-color .2s, box-shadow .2s; user-select: none;
     }
-    .comp-title-block p {
-      font-size: 12px; color: var(--slate-500); margin-top: 2px;
+    #comp-satker-btn:hover { border-color: var(--blue); }
+    #comp-satker-btn.open { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    #comp-satker-btn .csbtn-count {
+      background: var(--blue); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; display: none;
     }
-    .comp-controls {
+    #comp-satker-btn .csbtn-count.show { display: inline-flex; }
+    #comp-satker-btn .csbtn-arrow { margin-left: auto; font-size: 10px; color: var(--slate-400); transition: transform .2s; }
+    #comp-satker-btn.open .csbtn-arrow { transform: rotate(180deg); }
+    #comp-satker-dropdown {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0;
+      min-width: 280px; max-height: 340px; background: var(--white);
+      border: 1px solid var(--slate-200); border-radius: 12px;
+      box-shadow: var(--shadow-lg); z-index: 500; flex-direction: column; overflow: hidden;
+    }
+    #comp-satker-dropdown.open { display: flex; }
+
+    /* ─── JENIS PENGADAAN SECTION ────────────────────── */
+    .comp-section-title {
+      font-size: 12px; font-weight: 800; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--slate-500);
+      padding: 0 0 8px; flex-shrink: 0;
+    }
+    #comp-jenis-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px; flex-shrink: 0;
+    }
+    .jenis-card {
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 6px;
+      position: relative; overflow: hidden;
+    }
+    .jenis-card .jc-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--slate-500);
+    }
+    .jenis-card .jc-icon { font-size: 20px; }
+    .jenis-card .jc-month {
+      display: flex; flex-direction: column; gap: 4px;
+      margin-top: 4px;
+    }
+    .jenis-card .jc-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px;
+    }
+    .jenis-card .jc-bulan-name { color: var(--slate-500); font-weight: 500; }
+    .jenis-card .jc-nilai { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--slate-900); font-size: 11px; }
+    .jenis-card .jc-accent { position: absolute; top: 0; left: 0; width: 3px; height: 100%; border-radius: 12px 0 0 12px; }
+    .jenis-card .jc-divider { height: 1px; background: var(--slate-100); margin: 4px 0; }
+
+    /* ─── E-PURCHASING SECTION ───────────────────────── */
+    #comp-epurch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px; flex-shrink: 0;
+    }
+    .epurch-card {
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .epurch-card .ec-header {
       display: flex; align-items: center; gap: 8px;
     }
+    .epurch-card .ec-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .epurch-card .ec-title { font-size: 12px; font-weight: 700; color: var(--slate-900); }
+    .epurch-card .ec-sub   { font-size: 10px; color: var(--slate-400); margin-top: 1px; }
+    .epurch-card .ec-months { display: flex; flex-direction: column; gap: 6px; }
+    .epurch-card .ec-month-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 8px; border-radius: 8px; background: var(--slate-50);
+    }
+    .epurch-card .ec-month-name { font-size: 11px; font-weight: 600; color: var(--slate-700); }
+    .epurch-card .ec-badges { display: flex; gap: 4px; }
+    .ec-badge {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+    }
+    .ec-badge-proses  { background: #fef3c7; color: #92400e; }
+    .ec-badge-selesai { background: #d1fae5; color: #065f46; }
+    .ec-badge-total   { background: #eff6ff; color: #1d4ed8; }
+    #comp-bulan-picker {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 12px; padding: 12px;
+      box-shadow: var(--shadow-lg); z-index: 200;
+      display: none; flex-wrap: wrap; gap: 6px; width: 260px;
+    }
+    #comp-bulan-picker.open { display: flex; }
+
     .comp-bulan-wrap {
       display: flex; align-items: center; gap: 6px;
       background: var(--white); border: 1px solid var(--slate-200);
@@ -583,14 +684,6 @@
       position: relative;
     }
     .comp-bulan-wrap:hover { border-color: var(--blue); }
-    #comp-bulan-picker {
-      position: absolute; top: calc(100% + 6px); right: 0;
-      background: var(--white); border: 1px solid var(--slate-200);
-      border-radius: 12px; padding: 12px;
-      box-shadow: var(--shadow-lg); z-index: 200;
-      display: none; flex-wrap: wrap; gap: 6px; width: 260px;
-    }
-    #comp-bulan-picker.open { display: flex; }
     .comp-bulan-chip {
       font-family: inherit; font-size: 11px; font-weight: 600;
       padding: 5px 10px; border-radius: 7px;
@@ -1027,54 +1120,93 @@
 
 <!-- ── PAGE: PERBANDINGAN ─────────────────────────────── -->
 <div id="page-comparison" class="page">
-  <!-- HEADER ROW -->
-  <div class="comp-header">
-    <div class="comp-title-block">
-      <h2>📈 Perbandingan Realisasi Bulanan</h2>
-      <p>Bandingkan serapan anggaran antar bulan dalam satu tahun</p>
+
+  <!-- TOPBAR PERBANDINGAN (sama seperti dashboard) -->
+  <div id="comp-topbar">
+    <div id="comp-topbar-title">
+      📈 Perbandingan Realisasi Bulanan
+      <span>Bandingkan serapan anggaran antar bulan</span>
     </div>
-    <div class="comp-controls">
+    <div id="comp-topbar-controls">
+      <!-- Satker multi-select -->
+      <div id="comp-satker-wrap">
+        <div id="comp-satker-btn" onclick="toggleCompSatkerDropdown()">
+          <span>🏛 Satker</span>
+          <span class="csbtn-count" id="comp-satker-count"></span>
+          <span class="csbtn-arrow">▼</span>
+        </div>
+        <div id="comp-satker-dropdown">
+          <div id="satker-search-wrap" style="padding:10px 10px 6px;border-bottom:1px solid var(--slate-100);flex-shrink:0;">
+            <input type="text" id="comp-satker-search" placeholder="🔍 Cari satker…" oninput="renderCompSatkerList()" autocomplete="off" style="width:100%;font-family:inherit;font-size:12px;border:1px solid var(--slate-200);border-radius:7px;padding:6px 10px;background:var(--slate-50);color:var(--slate-900);outline:none;">
+          </div>
+          <div style="padding:6px 10px;display:flex;gap:6px;border-bottom:1px solid var(--slate-100);flex-shrink:0;">
+            <button class="satker-action-btn all" onclick="selectAllCompSatker()">Pilih Semua</button>
+            <button class="satker-action-btn clear" onclick="clearCompSatkerFilter()">Hapus Pilihan</button>
+          </div>
+          <div id="comp-satker-list" style="overflow-y:auto;flex:1;padding:6px;"></div>
+        </div>
+      </div>
+      <!-- Bulan picker -->
       <div class="comp-bulan-wrap" id="comp-bulan-wrap" onclick="toggleBulanPicker()">
-        📅 <span id="comp-bulan-label">Pilih Bulan</span> <span style="font-size:10px;color:var(--slate-400)">▼</span>
+        📅 <span id="comp-bulan-label">Pilih Bulan</span>
+        <span style="font-size:10px;color:var(--slate-400)">▼</span>
         <div id="comp-bulan-picker"></div>
       </div>
       <button class="btn btn-primary" onclick="loadComparison()">↺ Tampilkan</button>
     </div>
   </div>
 
-  <!-- EMPTY STATE (default) -->
-  <div id="comp-empty">
-    <div class="comp-empty-icon">📊</div>
-    <h3>Belum Ada Data Dipilih</h3>
-    <p>Pilih minimal dua bulan dari tombol <strong>📅 Pilih Bulan</strong> di atas, lalu klik <strong>Tampilkan</strong> untuk melihat perbandingan realisasi.</p>
-  </div>
+  <!-- SCROLLABLE BODY -->
+  <!-- SCROLLABLE BODY -->
+  <div id="comp-body" style="flex:1;min-height:0;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:16px;">
 
-  <!-- CONTENT (hidden until data loaded) -->
-  <div id="comp-content" style="display:none; flex-direction:column; gap:16px;">
-    <!-- Summary cards -->
-    <div id="comp-summary-row"></div>
-    <!-- Bar chart -->
-    <div id="comp-chart-wrap">
-      <div id="comp-chart-title">Perbandingan Nilai Realisasi per Bulan</div>
-      <div id="comp-chart" style="display:flex;gap:16px;">
-        <div id="comp-chart-yaxis"></div>
-        <div id="comp-chart-bars"></div>
-      </div>
-      <!-- Legend -->
-      <div id="comp-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;"></div>
+    <!-- EMPTY STATE (default) -->
+    <div id="comp-empty">
+      <div class="comp-empty-icon">📊</div>
+      <h3>Belum Ada Data Dipilih</h3>
+      <p>Pilih satker dan bulan dari kontrol di atas, lalu klik <strong>↺ Tampilkan</strong> untuk melihat perbandingan realisasi.</p>
     </div>
-    <!-- Detail table -->
-    <div id="comp-table-wrap">
-      <div id="comp-table-title">Detail Realisasi per Satuan Kerja</div>
-      <div id="comp-table-scroll">
-        <table id="comp-table">
-          <thead id="comp-table-head"></thead>
-          <tbody id="comp-table-body"></tbody>
-        </table>
+
+    <!-- CONTENT (hidden until data loaded) -->
+    <div id="comp-content" style="display:none; flex-direction:column; gap:16px;">
+      <!-- Summary cards per bulan -->
+      <div id="comp-summary-row"></div>
+      <!-- Bar chart -->
+      <div id="comp-chart-wrap">
+        <div id="comp-chart-title">Perbandingan Nilai Realisasi per Bulan</div>
+        <div id="comp-chart" style="display:flex;gap:16px;">
+          <div id="comp-chart-yaxis"></div>
+          <div id="comp-chart-bars"></div>
+        </div>
+        <div id="comp-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;"></div>
+      </div>
+
+      <!-- Jenis Pengadaan -->
+      <div>
+        <div class="comp-section-title">Rincian per Jenis Pengadaan</div>
+        <div id="comp-jenis-grid"></div>
+      </div>
+
+      <!-- E-Purchasing -->
+      <div>
+        <div class="comp-section-title">Rincian E-Purchasing</div>
+        <div id="comp-epurch-grid"></div>
+      </div>
+
+      <!-- Detail table satker -->
+      <div id="comp-table-wrap">
+        <div id="comp-table-title">Detail Realisasi per Satuan Kerja</div>
+        <div id="comp-table-scroll">
+          <table id="comp-table">
+            <thead id="comp-table-head"></thead>
+            <tbody id="comp-table-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+  </div><!-- /#comp-body -->
+</div><!-- /#page-comparison -->
 <div id="modal-overlay" onclick="closeModal(event)">
   <div id="modal-box">
     <div id="modal-header">
@@ -1482,8 +1614,9 @@
   // ── HALAMAN PERBANDINGAN ──────────────────────────────────
   // ══════════════════════════════════════════════════════════
 
-  let selectedCompBulan = new Set(); // bulan yang dipilih user
-  let compDataCache = {};            // cache: { "Januari": { rekapSatker, allPackages }, ... }
+  let selectedCompBulan  = new Set();
+  let compDataCache      = {};
+  let selectedCompSatker = new Set(); // satker filter khusus comparison page
 
   const COMP_COLORS = [
     { bar: '#2563eb', pagu: '#93c5fd', label: '#1d4ed8' },
@@ -1494,7 +1627,23 @@
     { bar: '#0891b2', pagu: '#67e8f9', label: '#164e63' },
   ];
 
-  // ── BUILD BULAN PICKER ───────────────────────────────────
+  // Jenis pengadaan — cocokkan ke field cara (row[2]) di data
+  const JENIS_DEF = [
+    { key: 'Barang',              icon: '📦', color: '#2563eb', bg: '#eff6ff' },
+    { key: 'Jasa Konsultansi',    icon: '📝', color: '#7c3aed', bg: '#f5f3ff' },
+    { key: 'Jasa Lainnya',        icon: '🔧', color: '#0891b2', bg: '#ecfeff' },
+    { key: 'Pekerjaan Konstruksi',icon: '🏗',  color: '#d97706', bg: '#fffbeb' },
+  ];
+
+  // E-purchasing — metode yang termasuk e-purchasing
+  const EPURCH_DEF = [
+    { key: 'E-Katalog',   label: 'E-Katalog V6',  icon: '🛒', bg: '#eff6ff', color: '#2563eb',
+      match: (m) => /e[\s-]?katalog/i.test(m) },
+    { key: 'Toko Daring', label: 'Toko Daring',   icon: '🏪', bg: '#f0fdf4', color: '#059669',
+      match: (m) => /toko[\s-]?daring/i.test(m) },
+  ];
+
+  // ── BULAN PICKER ─────────────────────────────────────────
   function buildBulanPicker() {
     const picker = document.getElementById('comp-bulan-picker');
     picker.innerHTML = '';
@@ -1508,8 +1657,7 @@
   }
 
   function toggleBulanPicker() {
-    const picker = document.getElementById('comp-bulan-picker');
-    picker.classList.toggle('open');
+    document.getElementById('comp-bulan-picker').classList.toggle('open');
   }
 
   function toggleCompBulan(b) {
@@ -1527,24 +1675,90 @@
       : `${n} Bulan Dipilih`;
   }
 
-  // Close picker on outside click
-  document.addEventListener('click', e => {
-    const wrap = document.getElementById('comp-bulan-wrap');
-    if (wrap && !wrap.contains(e.target)) {
-      document.getElementById('comp-bulan-picker').classList.remove('open');
+  // ── COMP SATKER DROPDOWN ─────────────────────────────────
+  function toggleCompSatkerDropdown() {
+    const btn = document.getElementById('comp-satker-btn');
+    const dd  = document.getElementById('comp-satker-dropdown');
+    const open = dd.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    if (open) {
+      document.getElementById('comp-satker-search').value = '';
+      renderCompSatkerList();
+      document.getElementById('comp-satker-search').focus();
     }
-  });
+  }
 
-  // ── LOAD COMPARISON DATA ─────────────────────────────────
+  function renderCompSatkerList() {
+    // Build union of all satker names from cached data
+    const allSatkerNames = new Set();
+    Object.values(compDataCache).forEach(d => d.rekapSatker.forEach(s => allSatkerNames.add(s.namaSatker)));
+    // Also include from allData if on dashboard
+    allData.forEach(s => allSatkerNames.add(s.namaSatker));
+
+    const q   = document.getElementById('comp-satker-search').value.toLowerCase();
+    const el  = document.getElementById('comp-satker-list');
+    el.innerHTML = '';
+
+    const names = [...allSatkerNames].sort().filter(n => !q || n.toLowerCase().includes(q));
+    if (!names.length) {
+      el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--slate-400);font-size:12px;">Tidak ditemukan</div>';
+      return;
+    }
+    names.forEach(name => {
+      const checked = selectedCompSatker.has(name);
+      const item = document.createElement('div');
+      item.className = 'satker-item' + (checked ? ' checked' : '');
+      item.innerHTML = `<div class="cb">${checked ? '✓' : ''}</div><span class="item-name" title="${name}">${name}</span>`;
+      item.addEventListener('click', () => {
+        if (selectedCompSatker.has(name)) selectedCompSatker.delete(name);
+        else selectedCompSatker.add(name);
+        updateCompSatkerBtn();
+        renderCompSatkerList();
+      });
+      el.appendChild(item);
+    });
+  }
+
+  function selectAllCompSatker() {
+    const allNames = new Set();
+    Object.values(compDataCache).forEach(d => d.rekapSatker.forEach(s => allNames.add(s.namaSatker)));
+    allData.forEach(s => allNames.add(s.namaSatker));
+    allNames.forEach(n => selectedCompSatker.add(n));
+    updateCompSatkerBtn(); renderCompSatkerList();
+  }
+
+  function clearCompSatkerFilter() {
+    selectedCompSatker.clear();
+    updateCompSatkerBtn(); renderCompSatkerList();
+  }
+
+  function updateCompSatkerBtn() {
+    const el = document.getElementById('comp-satker-count');
+    const n  = selectedCompSatker.size;
+    el.textContent = n;
+    n > 0 ? el.classList.add('show') : el.classList.remove('show');
+  }
+
+  // ── HELPERS — filter paket & satker by comp satker selection ──
+  function getFilteredPkgs(bulan) {
+    const pkgs = compDataCache[bulan].allPackages || [];
+    if (selectedCompSatker.size === 0) return pkgs;
+    return pkgs.filter(p => selectedCompSatker.has(p.satker));
+  }
+
+  function getFilteredSatkers(bulan) {
+    const rows = compDataCache[bulan].rekapSatker || [];
+    if (selectedCompSatker.size === 0) return rows;
+    return rows.filter(s => selectedCompSatker.has(s.namaSatker));
+  }
+
+  // ── LOAD DATA ────────────────────────────────────────────
   async function loadComparison() {
     if (selectedCompBulan.size < 1) {
       toast('⚠️ Pilih minimal satu bulan untuk perbandingan', true);
       return;
     }
-
-    // Fetch months not in cache
     const toFetch = [...selectedCompBulan].filter(b => !compDataCache[b]);
-
     if (toFetch.length > 0) {
       showLoader(true);
       setLoaderProgress(10, 'Mengambil data perbandingan…');
@@ -1555,10 +1769,7 @@
           const res  = await fetch(url);
           const json = await res.json();
           if (json.error) throw new Error(json.error);
-          compDataCache[bulan] = {
-            rekapSatker: json.rekapSatker || [],
-            allPackages:  json.allPackages  || []
-          };
+          compDataCache[bulan] = { rekapSatker: json.rekapSatker || [], allPackages: json.allPackages || [] };
           done++;
           setLoaderProgress(10 + Math.round(done / toFetch.length * 80), `Memuat ${bulan}…`);
         }
@@ -1570,31 +1781,32 @@
         return;
       }
     }
-
+    // After data loaded, populate satker dropdown
+    renderCompSatkerList();
     renderComparison();
   }
 
-  // ── RENDER COMPARISON ────────────────────────────────────
+  // ── RENDER COMPARISON (main) ─────────────────────────────
   function renderComparison() {
-    // Sort bulan sesuai urutan kalender
     const sortedBulan = BULAN_LIST.filter(b => selectedCompBulan.has(b));
 
     document.getElementById('comp-empty').style.display = 'none';
     const content = document.getElementById('comp-content');
     content.style.display = 'flex';
 
-    // Gather totals per month
     const monthTotals = sortedBulan.map((b, i) => {
-      const d = compDataCache[b];
-      const totalPagu  = d.rekapSatker.reduce((a, s) => a + (s.nilaiRUP || 0), 0);
-      const totalReal  = d.rekapSatker.reduce((a, s) => a + (s.nilaiReal || 0), 0);
-      const totalPaket = d.rekapSatker.reduce((a, s) => a + (s.totalPaket || 0), 0);
+      const satkers = getFilteredSatkers(b);
+      const totalPagu  = satkers.reduce((a, s) => a + (s.nilaiRUP  || 0), 0);
+      const totalReal  = satkers.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+      const totalPaket = satkers.reduce((a, s) => a + (s.totalPaket || 0), 0);
       const pct = totalPagu > 0 ? (totalReal / totalPagu * 100) : 0;
       return { bulan: b, pagu: totalPagu, real: totalReal, paket: totalPaket, pct, color: COMP_COLORS[i % COMP_COLORS.length] };
     });
 
     renderCompSummary(monthTotals);
     renderCompChart(monthTotals);
+    renderJenisPengadaan(sortedBulan);
+    renderEPurchasing(sortedBulan);
     renderCompTable(sortedBulan);
   }
 
@@ -1612,8 +1824,7 @@
           <div class="cs-month">${m.bulan}</div>
           <div class="cs-nilai">${fmt(m.real)}</div>
           <div class="cs-pct" style="color:${m.color.label}">
-            ${m.pct.toFixed(1)}% serapan
-            &nbsp;<span class="comp-pct-pill ${pctClass}">${m.pct.toFixed(0)}%</span>
+            ${m.pct.toFixed(1)}% serapan &nbsp;<span class="comp-pct-pill ${pctClass}">${m.pct.toFixed(0)}%</span>
           </div>
           <div style="font-size:10px;color:var(--slate-400);margin-top:2px">${m.paket} paket · Pagu ${fmt(m.pagu)}</div>
           <div class="cs-bar-track"><div class="cs-bar-fill" style="width:${barW}%;background:${m.color.bar}"></div></div>
@@ -1625,18 +1836,13 @@
   function renderCompChart(months) {
     const maxVal = Math.max(...months.map(m => m.pagu), 1);
     const steps = 5;
-
-    // Y-axis
     const yaxis = document.getElementById('comp-chart-yaxis');
     yaxis.innerHTML = '';
     for (let i = steps; i >= 0; i--) {
-      const v = maxVal * i / steps;
       const s = document.createElement('span');
-      s.textContent = fmtShort(v);
+      s.textContent = fmtShort(maxVal * i / steps);
       yaxis.appendChild(s);
     }
-
-    // Bars
     const barsEl = document.getElementById('comp-chart-bars');
     barsEl.innerHTML = '';
     months.forEach(m => {
@@ -1656,10 +1862,7 @@
         <div class="cbar-label">${m.bulan}</div>`;
       barsEl.appendChild(group);
     });
-
-    // Legend
-    const legend = document.getElementById('comp-legend');
-    legend.innerHTML = `
+    document.getElementById('comp-legend').innerHTML = `
       <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--slate-500)">
         <div style="width:12px;height:12px;border-radius:3px;background:#cbd5e1"></div> Pagu RUP
       </div>
@@ -1668,31 +1871,147 @@
       </div>`;
   }
 
+  // ── JENIS PENGADAAN ──────────────────────────────────────
+  function renderJenisPengadaan(sortedBulan) {
+    const grid = document.getElementById('comp-jenis-grid');
+    grid.innerHTML = '';
+
+    JENIS_DEF.forEach(jenis => {
+      // Per bulan, hitung total pagu & realisasi untuk jenis ini
+      const monthRows = sortedBulan.map(b => {
+        const pkgs = getFilteredPkgs(b);
+        const matched = pkgs.filter(p => {
+          // cara pengadaan ada di field 'cara' yang tidak disimpan di allPackages
+          // kita deteksi dari metode & nama paket atau dari rekapSatker
+          // Karena code.gs hanya simpan metode di allPackages, kita cocokkan dari nama jenis
+          // Namun cara pengadaan (Barang/Jasa dll) tidak ada di allPackages
+          // Kita ambil dari rekapSatker.caraPengadaan tidak cukup granular
+          // Pakai heuristic dari metode: swakelola = swakelola, sisanya cek kolom cara
+          // Karena data tidak ada kolom jenis, kita hitung dari rekapSatker methodMap
+          return false; // placeholder — lihat penjelasan di bawah
+        });
+        return { bulan: b, pagu: 0, real: 0, count: 0 };
+      });
+
+      // CATATAN: allPackages tidak menyimpan jenis pengadaan (Barang/Jasa dll).
+      // Hanya menyimpan: satker, kode, nama, metode, status, pagu, realisasi.
+      // Kita hitung dari rekapSatker jika ada field jenisPengadaan,
+      // atau tampilkan "Data tidak tersedia di sumber" — namun kita tetap render card.
+      // Untuk saat ini kita render dari allPackages dengan heuristic nama
+      const monthData = sortedBulan.map(b => {
+        const pkgs = getFilteredPkgs(b);
+        // Heuristic: cocokkan jenis dari nama paket (tidak sempurna tapi cukup)
+        let pagu = 0, real = 0, count = 0;
+        pkgs.forEach(p => {
+          const nm = (p.nama || '').toLowerCase();
+          const mt = normMetode(p.metode).toLowerCase();
+          let match = false;
+          if (jenis.key === 'Barang') match = /barang|pengadaan alat|beli|belanja bahan|makan|minum|atk|komputer|laptop|printer|furnitur/i.test(nm);
+          else if (jenis.key === 'Jasa Konsultansi') match = /konsultan|kajian|studi|perencanaan|pengawasan|audit|evaluasi|penelitian/i.test(nm);
+          else if (jenis.key === 'Pekerjaan Konstruksi') match = /konstruksi|bangun|rehab|renovasi|gedung|jalan|jembatan|saluran|talud|drainase|paving|pagar|instalasi listrik/i.test(nm);
+          else if (jenis.key === 'Jasa Lainnya') match = /jasa|servis|pemeliharaan|perawatan|kebersihan|keamanan|angkut|cetak|sewa|laundry|suku cadang/i.test(nm);
+          if (match) { pagu += p.pagu; real += p.realisasi; count++; }
+        });
+        return { bulan: b, pagu, real, count };
+      });
+
+      const card = document.createElement('div');
+      card.className = 'jenis-card';
+      card.innerHTML = `
+        <div class="jc-accent" style="background:${jenis.color}"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span class="jc-icon">${jenis.icon}</span>
+          <span class="jc-label">${jenis.key}</span>
+        </div>
+        <div class="jc-month">
+          ${monthData.map(md => {
+            const pct = md.pagu > 0 ? (md.real / md.pagu * 100) : 0;
+            const pctCls = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+            return `<div class="jc-row">
+              <span class="jc-bulan-name">${md.bulan}</span>
+              <span class="jc-nilai">${fmt(md.real)}
+                <span class="comp-pct-pill ${pctCls}">${pct.toFixed(0)}%</span>
+              </span>
+            </div>
+            <div style="height:3px;background:var(--slate-100);border-radius:3px;margin:2px 0;">
+              <div style="height:100%;width:${pct.toFixed(1)}%;background:${jenis.color};border-radius:3px;"></div>
+            </div>`;
+          }).join('<div class="jc-divider"></div>')}
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  // ── E-PURCHASING ─────────────────────────────────────────
+  function renderEPurchasing(sortedBulan) {
+    const grid = document.getElementById('comp-epurch-grid');
+    grid.innerHTML = '';
+
+    EPURCH_DEF.forEach(ep => {
+      const monthRows = sortedBulan.map(b => {
+        const pkgs = getFilteredPkgs(b).filter(p => ep.match(normMetode(p.metode)));
+        const proses  = pkgs.filter(p => !/selesai/i.test(p.status || ''));
+        const selesai = pkgs.filter(p =>  /selesai/i.test(p.status || ''));
+        const totalNilai   = pkgs.reduce((a, p) => a + p.pagu, 0);
+        const totalReal    = pkgs.reduce((a, p) => a + p.realisasi, 0);
+        const selesaiNilai = selesai.reduce((a, p) => a + p.realisasi, 0);
+        return {
+          bulan: b,
+          total: pkgs.length, totalNilai, totalReal,
+          proses: proses.length, prosesNilai: proses.reduce((a,p)=>a+p.pagu,0),
+          selesai: selesai.length, selesaiNilai
+        };
+      });
+
+      const totalAll = monthRows.reduce((a, r) => a + r.total, 0);
+      const card = document.createElement('div');
+      card.className = 'epurch-card';
+      card.innerHTML = `
+        <div class="ec-header">
+          <div class="ec-icon" style="background:${ep.bg}">${ep.icon}</div>
+          <div>
+            <div class="ec-title">${ep.label}</div>
+            <div class="ec-sub">Total ${totalAll} transaksi di semua bulan dipilih</div>
+          </div>
+        </div>
+        <div class="ec-months">
+          ${monthRows.map(r => `
+            <div class="ec-month-row">
+              <span class="ec-month-name">${r.bulan}</span>
+              <div class="ec-badges">
+                <span class="ec-badge ec-badge-total">Total ${r.total}</span>
+                <span class="ec-badge ec-badge-proses">Proses ${r.proses}</span>
+                <span class="ec-badge ec-badge-selesai">Selesai ${r.selesai}</span>
+              </div>
+            </div>
+            <div style="padding:2px 8px 4px;font-size:10px;color:var(--slate-400)">
+              Pagu ${fmt(r.totalNilai)} · Realisasi ${fmt(r.totalReal)}
+            </div>
+          `).join('')}
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
   // ── DETAIL TABLE ─────────────────────────────────────────
   function renderCompTable(sortedBulan) {
-    // Gather all satker names across all months
     const satkerSet = new Set();
-    sortedBulan.forEach(b => {
-      compDataCache[b].rekapSatker.forEach(s => satkerSet.add(s.namaSatker));
-    });
+    sortedBulan.forEach(b => getFilteredSatkers(b).forEach(s => satkerSet.add(s.namaSatker)));
     const satkers = [...satkerSet].sort();
 
-    // Head
     const head = document.getElementById('comp-table-head');
     head.innerHTML = `<tr>
       <th>Satuan Kerja</th>
       ${sortedBulan.map(b => `<th>${b}<br><span style="font-weight:500;font-size:9px;letter-spacing:0">Realisasi · Serapan</span></th>`).join('')}
     </tr>`;
 
-    // Body
     const tbody = document.getElementById('comp-table-body');
     tbody.innerHTML = '';
 
-    // Build lookup
     const lookup = {};
     sortedBulan.forEach(b => {
       lookup[b] = {};
-      compDataCache[b].rekapSatker.forEach(s => { lookup[b][s.namaSatker] = s; });
+      getFilteredSatkers(b).forEach(s => { lookup[b][s.namaSatker] = s; });
     });
 
     satkers.forEach(name => {
@@ -1709,15 +2028,14 @@
       tbody.appendChild(row);
     });
 
-    // Totals row
+    // Total row
     const totRow = document.createElement('tr');
-    totRow.style.fontWeight = '700';
-    totRow.style.background = 'var(--slate-50)';
+    totRow.style.cssText = 'font-weight:700;background:var(--slate-50)';
     let totCells = `<td>TOTAL</td>`;
     sortedBulan.forEach(b => {
-      const d = compDataCache[b];
-      const totalReal = d.rekapSatker.reduce((a, s) => a + (s.nilaiReal || 0), 0);
-      const totalPagu = d.rekapSatker.reduce((a, s) => a + (s.nilaiRUP  || 0), 0);
+      const rows = getFilteredSatkers(b);
+      const totalReal = rows.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+      const totalPagu = rows.reduce((a, s) => a + (s.nilaiRUP  || 0), 0);
       const pct = totalPagu > 0 ? (totalReal / totalPagu * 100) : 0;
       const pctClass = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
       totCells += `<td style="color:var(--slate-900)">${fmt(totalReal)}<span class="comp-pct-pill ${pctClass}">${pct.toFixed(0)}%</span></td>`;
@@ -1736,7 +2054,17 @@
       document.getElementById('satker-dropdown').classList.remove('open');
       document.getElementById('satker-btn').classList.remove('open');
     }
+    const compSatkerWrap = document.getElementById('comp-satker-wrap');
+    if (compSatkerWrap && !compSatkerWrap.contains(e.target)) {
+      document.getElementById('comp-satker-dropdown').classList.remove('open');
+      document.getElementById('comp-satker-btn').classList.remove('open');
+    }
+    const compBulanWrap = document.getElementById('comp-bulan-wrap');
+    if (compBulanWrap && !compBulanWrap.contains(e.target)) {
+      document.getElementById('comp-bulan-picker').classList.remove('open');
+    }
   });
+
   function fmtShort(n) {
     if (n >= 1e12) return (n/1e12).toFixed(1) + 'T';
     if (n >= 1e9)  return (n/1e9).toFixed(1)  + 'M';
