@@ -49,7 +49,7 @@
       gap: 20px;
       transition: opacity .4s ease, visibility .4s ease;
     }
-    #loader.hidden { opacity: 0; visibility: hidden; }
+    #loader { display: none; }
 
     .loader-logo {
       font-size: 13px; font-weight: 700; letter-spacing: 3px;
@@ -523,7 +523,241 @@
     }
     .error-btn-dismiss:hover { background: var(--slate-100); }
 
-    /* ─── SATKER DROPDOWN ───────────────────────────── */
+    /* ─── NAV TABS ───────────────────────────────────── */
+    #nav-tabs {
+      display: flex; align-items: center; gap: 4px;
+      margin-right: 8px;
+    }
+    .nav-tab {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 7px 16px; border-radius: 8px; border: none;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--slate-500);
+      background: transparent;
+    }
+    .nav-tab:hover { background: var(--slate-100); color: var(--slate-700); }
+    .nav-tab.active {
+      background: var(--blue); color: #fff;
+      box-shadow: 0 2px 8px rgba(37,99,235,.3);
+    }
+    .nav-divider {
+      width: 1px; height: 20px;
+      background: var(--slate-200);
+      margin-right: 4px;
+    }
+
+    /* ─── PAGE VISIBILITY ────────────────────────────── */
+    .page { display: none; flex: 1; min-height: 0; flex-direction: column; }
+    .page.active { display: flex; }
+
+    /* hide dashboard-only controls when on comparison page */
+    #dashboard-controls { display: flex; align-items: center; gap: 8px; }
+
+    /* ─── COMPARISON PAGE ────────────────────────────── */
+    #page-comparison {
+      padding: 20px 24px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .comp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .comp-title-block h2 {
+      font-size: 16px; font-weight: 800; color: var(--slate-900);
+    }
+    .comp-title-block p {
+      font-size: 12px; color: var(--slate-500); margin-top: 2px;
+    }
+    .comp-controls {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .comp-bulan-wrap {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 10px; padding: 6px 12px;
+      font-size: 12px; font-weight: 600; color: var(--slate-600);
+      cursor: pointer; transition: border-color .2s;
+      position: relative;
+    }
+    .comp-bulan-wrap:hover { border-color: var(--blue); }
+    #comp-bulan-picker {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 12px; padding: 12px;
+      box-shadow: var(--shadow-lg); z-index: 200;
+      display: none; flex-wrap: wrap; gap: 6px; width: 260px;
+    }
+    #comp-bulan-picker.open { display: flex; }
+    .comp-bulan-chip {
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      padding: 5px 10px; border-radius: 7px;
+      border: 1.5px solid var(--slate-200);
+      background: var(--white); color: var(--slate-600);
+      cursor: pointer; transition: all .15s;
+    }
+    .comp-bulan-chip:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
+    .comp-bulan-chip.selected { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .comp-bulan-chip.disabled { opacity: .35; cursor: not-allowed; }
+
+    /* EMPTY state comparison */
+    #comp-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      padding: 60px 20px;
+    }
+    .comp-empty-icon {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+    }
+    #comp-empty h3 { font-size: 16px; font-weight: 800; color: var(--slate-700); }
+    #comp-empty p { font-size: 13px; color: var(--slate-400); text-align: center; max-width: 340px; line-height: 1.6; }
+
+    /* SUMMARY CARDS row */
+    #comp-summary-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px; flex-shrink: 0;
+    }
+    .comp-summary-card {
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+      position: relative; overflow: hidden;
+    }
+    .comp-summary-card .cs-month {
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--slate-500);
+    }
+    .comp-summary-card .cs-nilai {
+      font-size: 14px; font-weight: 800; color: var(--slate-900);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .comp-summary-card .cs-pct {
+      font-size: 11px; font-weight: 600;
+    }
+    .comp-summary-card .cs-bar-track {
+      height: 4px; background: var(--slate-100); border-radius: 4px; margin-top: 6px;
+    }
+    .comp-summary-card .cs-bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width .6s ease;
+    }
+    .comp-summary-card .cs-accent {
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%; border-radius: 12px 0 0 12px;
+    }
+
+    /* CHART container */
+    #comp-chart-wrap {
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 14px; padding: 20px 24px;
+      flex-shrink: 0;
+    }
+    #comp-chart-title {
+      font-size: 13px; font-weight: 700; color: var(--slate-700);
+      margin-bottom: 16px;
+    }
+    #comp-chart {
+      display: flex; align-items: flex-end; gap: 10px;
+      height: 180px; position: relative;
+    }
+    #comp-chart-yaxis {
+      display: flex; flex-direction: column-reverse;
+      justify-content: space-between;
+      height: 180px; flex-shrink: 0;
+      padding: 0; width: 80px;
+    }
+    #comp-chart-yaxis span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--slate-400);
+      line-height: 1; text-align: right;
+    }
+    #comp-chart-bars {
+      flex: 1; display: flex; align-items: flex-end;
+      gap: 8px; height: 180px; position: relative;
+    }
+    #comp-chart-bars::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        to top,
+        var(--slate-100) 0px, var(--slate-100) 1px,
+        transparent 1px, transparent calc(180px/5)
+      );
+      pointer-events: none;
+    }
+    .cbar-group {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 6px; min-width: 0;
+    }
+    .cbar-pair {
+      width: 100%; display: flex; align-items: flex-end;
+      justify-content: center; gap: 3px; flex: 1;
+    }
+    .cbar {
+      flex: 1; border-radius: 5px 5px 0 0;
+      transition: height .6s cubic-bezier(.34,1.56,.64,1);
+      min-height: 2px; position: relative; cursor: pointer;
+    }
+    .cbar:hover { filter: brightness(1.1); }
+    .cbar-label {
+      font-size: 10px; font-weight: 700; color: var(--slate-500);
+      text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cbar-tooltip {
+      position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%);
+      background: var(--slate-900); color: #fff;
+      font-size: 10px; font-weight: 600;
+      padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+      z-index: 100;
+    }
+    .cbar:hover .cbar-tooltip { opacity: 1; }
+
+    /* DETAIL TABLE comparison */
+    #comp-table-wrap {
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 14px; overflow: hidden; flex-shrink: 0;
+    }
+    #comp-table-title {
+      padding: 14px 20px;
+      font-size: 13px; font-weight: 700; color: var(--slate-700);
+      border-bottom: 1px solid var(--slate-100);
+    }
+    #comp-table-scroll { overflow-x: auto; }
+    #comp-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+    }
+    #comp-table th {
+      padding: 10px 14px;
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--slate-500);
+      background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+      text-align: right; white-space: nowrap;
+    }
+    #comp-table th:first-child { text-align: left; }
+    #comp-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700); text-align: right;
+    }
+    #comp-table td:first-child { text-align: left; font-weight: 600; color: var(--slate-900); }
+    #comp-table tr:last-child td { border-bottom: none; }
+    #comp-table tr:hover td { background: var(--slate-50); }
+    .comp-pct-pill {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 5px; margin-left: 4px;
+    }
+    .pct-hi { background: #d1fae5; color: #065f46; }
+    .pct-mid { background: #fef3c7; color: #92400e; }
+    .pct-lo { background: #fee2e2; color: #991b1b; }
     #satker-dropdown-wrap {
       position: relative;
     }
@@ -656,8 +890,14 @@
       <p>Realisasi Barang/Jasa Pemerintah Kota Surakarta</p>
     </div>
   </div>
-  <div class="topbar-controls">
-    <!-- SATKER MULTI-SELECT -->
+  <!-- NAV TABS -->
+  <div id="nav-tabs">
+    <button class="nav-tab active" id="tab-dashboard" onclick="switchPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab" id="tab-comparison" onclick="switchPage('comparison')">📈 Perbandingan</button>
+  </div>
+  <div class="nav-divider"></div>
+  <!-- DASHBOARD CONTROLS -->
+  <div id="dashboard-controls">
     <div id="satker-dropdown-wrap">
       <div id="satker-btn" onclick="toggleSatkerDropdown()">
         <span>🏛 Satker</span>
@@ -681,7 +921,8 @@
   </div>
 </div>
 
-<!-- ── MAIN ─────────────────────────────────────────────── -->
+<!-- ── PAGE: DASHBOARD ────────────────────────────────── -->
+<div id="page-dashboard" class="page active">
 <div id="main-wrapper">
 
   <!-- CARDS -->
@@ -781,9 +1022,59 @@
       </div>
     </div>
   </div>
-</div>
+</div><!-- /#main-wrapper -->
+</div><!-- /#page-dashboard -->
 
-<!-- ── MODAL ─────────────────────────────────────────────── -->
+<!-- ── PAGE: PERBANDINGAN ─────────────────────────────── -->
+<div id="page-comparison" class="page">
+  <!-- HEADER ROW -->
+  <div class="comp-header">
+    <div class="comp-title-block">
+      <h2>📈 Perbandingan Realisasi Bulanan</h2>
+      <p>Bandingkan serapan anggaran antar bulan dalam satu tahun</p>
+    </div>
+    <div class="comp-controls">
+      <div class="comp-bulan-wrap" id="comp-bulan-wrap" onclick="toggleBulanPicker()">
+        📅 <span id="comp-bulan-label">Pilih Bulan</span> <span style="font-size:10px;color:var(--slate-400)">▼</span>
+        <div id="comp-bulan-picker"></div>
+      </div>
+      <button class="btn btn-primary" onclick="loadComparison()">↺ Tampilkan</button>
+    </div>
+  </div>
+
+  <!-- EMPTY STATE (default) -->
+  <div id="comp-empty">
+    <div class="comp-empty-icon">📊</div>
+    <h3>Belum Ada Data Dipilih</h3>
+    <p>Pilih minimal dua bulan dari tombol <strong>📅 Pilih Bulan</strong> di atas, lalu klik <strong>Tampilkan</strong> untuk melihat perbandingan realisasi.</p>
+  </div>
+
+  <!-- CONTENT (hidden until data loaded) -->
+  <div id="comp-content" style="display:none; flex-direction:column; gap:16px;">
+    <!-- Summary cards -->
+    <div id="comp-summary-row"></div>
+    <!-- Bar chart -->
+    <div id="comp-chart-wrap">
+      <div id="comp-chart-title">Perbandingan Nilai Realisasi per Bulan</div>
+      <div id="comp-chart" style="display:flex;gap:16px;">
+        <div id="comp-chart-yaxis"></div>
+        <div id="comp-chart-bars"></div>
+      </div>
+      <!-- Legend -->
+      <div id="comp-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;"></div>
+    </div>
+    <!-- Detail table -->
+    <div id="comp-table-wrap">
+      <div id="comp-table-title">Detail Realisasi per Satuan Kerja</div>
+      <div id="comp-table-scroll">
+        <table id="comp-table">
+          <thead id="comp-table-head"></thead>
+          <tbody id="comp-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="modal-overlay" onclick="closeModal(event)">
   <div id="modal-box">
     <div id="modal-header">
@@ -831,7 +1122,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxHi-Z01sZRvfZDAGSoYl6mKzsyowPT9s35-DPswWqhEtbrnq_hmggIjRTGXA7hZ2W_7g/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby9jWZ1fTjL6XNLT8gtTgCCr2bLlW4DYnTTZnLkoaQ8PzzYMzX-A3e98OwnhqpmLdlIUA/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -855,8 +1146,23 @@
       if (i === cur) o.selected = true;
       sel.appendChild(o);
     });
-    refreshData();
+    buildBulanPicker();
+    // Tampilkan dashboard tanpa langsung memuat data
+    showLoader(false);
   });
+
+  // ── PAGE SWITCH ──────────────────────────────────────────
+  let currentPage = 'dashboard';
+  function switchPage(page) {
+    currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('tab-' + page).classList.add('active');
+    // Tampilkan/sembunyikan kontrol dashboard
+    document.getElementById('dashboard-controls').style.display =
+      page === 'dashboard' ? 'flex' : 'none';
+  }
 
   // ── FETCH ────────────────────────────────────────────────
   async function refreshData() {
@@ -902,7 +1208,7 @@
   // ── LOADER HELPERS ───────────────────────────────────────
   function showLoader(v) {
     const l = document.getElementById('loader');
-    v ? l.classList.remove('hidden') : l.classList.add('hidden');
+    l.style.display = v ? 'flex' : 'none';
   }
   function setLoaderProgress(pct, msg) {
     document.getElementById('loader-bar').style.width  = pct + '%';
@@ -1172,14 +1478,272 @@
     }
   }
 
-  // Close dropdown when clicking outside
+  // ══════════════════════════════════════════════════════════
+  // ── HALAMAN PERBANDINGAN ──────────────────────────────────
+  // ══════════════════════════════════════════════════════════
+
+  let selectedCompBulan = new Set(); // bulan yang dipilih user
+  let compDataCache = {};            // cache: { "Januari": { rekapSatker, allPackages }, ... }
+
+  const COMP_COLORS = [
+    { bar: '#2563eb', pagu: '#93c5fd', label: '#1d4ed8' },
+    { bar: '#059669', pagu: '#6ee7b7', label: '#065f46' },
+    { bar: '#7c3aed', pagu: '#c4b5fd', label: '#5b21b6' },
+    { bar: '#d97706', pagu: '#fcd34d', label: '#92400e' },
+    { bar: '#dc2626', pagu: '#fca5a5', label: '#991b1b' },
+    { bar: '#0891b2', pagu: '#67e8f9', label: '#164e63' },
+  ];
+
+  // ── BUILD BULAN PICKER ───────────────────────────────────
+  function buildBulanPicker() {
+    const picker = document.getElementById('comp-bulan-picker');
+    picker.innerHTML = '';
+    BULAN_LIST.forEach(b => {
+      const chip = document.createElement('button');
+      chip.className = 'comp-bulan-chip' + (selectedCompBulan.has(b) ? ' selected' : '');
+      chip.textContent = b;
+      chip.onclick = (e) => { e.stopPropagation(); toggleCompBulan(b); };
+      picker.appendChild(chip);
+    });
+  }
+
+  function toggleBulanPicker() {
+    const picker = document.getElementById('comp-bulan-picker');
+    picker.classList.toggle('open');
+  }
+
+  function toggleCompBulan(b) {
+    if (selectedCompBulan.has(b)) selectedCompBulan.delete(b);
+    else selectedCompBulan.add(b);
+    buildBulanPicker();
+    updateCompBulanLabel();
+  }
+
+  function updateCompBulanLabel() {
+    const label = document.getElementById('comp-bulan-label');
+    const n = selectedCompBulan.size;
+    label.textContent = n === 0 ? 'Pilih Bulan'
+      : n === 1 ? [...selectedCompBulan][0]
+      : `${n} Bulan Dipilih`;
+  }
+
+  // Close picker on outside click
   document.addEventListener('click', e => {
-    const wrap = document.getElementById('satker-dropdown-wrap');
+    const wrap = document.getElementById('comp-bulan-wrap');
     if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('comp-bulan-picker').classList.remove('open');
+    }
+  });
+
+  // ── LOAD COMPARISON DATA ─────────────────────────────────
+  async function loadComparison() {
+    if (selectedCompBulan.size < 1) {
+      toast('⚠️ Pilih minimal satu bulan untuk perbandingan', true);
+      return;
+    }
+
+    // Fetch months not in cache
+    const toFetch = [...selectedCompBulan].filter(b => !compDataCache[b]);
+
+    if (toFetch.length > 0) {
+      showLoader(true);
+      setLoaderProgress(10, 'Mengambil data perbandingan…');
+      try {
+        let done = 0;
+        for (const bulan of toFetch) {
+          const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
+          const res  = await fetch(url);
+          const json = await res.json();
+          if (json.error) throw new Error(json.error);
+          compDataCache[bulan] = {
+            rekapSatker: json.rekapSatker || [],
+            allPackages:  json.allPackages  || []
+          };
+          done++;
+          setLoaderProgress(10 + Math.round(done / toFetch.length * 80), `Memuat ${bulan}…`);
+        }
+        setLoaderProgress(100, 'Selesai!');
+        setTimeout(() => showLoader(false), 300);
+      } catch (e) {
+        setTimeout(() => showLoader(false), 200);
+        showError(e.message);
+        return;
+      }
+    }
+
+    renderComparison();
+  }
+
+  // ── RENDER COMPARISON ────────────────────────────────────
+  function renderComparison() {
+    // Sort bulan sesuai urutan kalender
+    const sortedBulan = BULAN_LIST.filter(b => selectedCompBulan.has(b));
+
+    document.getElementById('comp-empty').style.display = 'none';
+    const content = document.getElementById('comp-content');
+    content.style.display = 'flex';
+
+    // Gather totals per month
+    const monthTotals = sortedBulan.map((b, i) => {
+      const d = compDataCache[b];
+      const totalPagu  = d.rekapSatker.reduce((a, s) => a + (s.nilaiRUP || 0), 0);
+      const totalReal  = d.rekapSatker.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+      const totalPaket = d.rekapSatker.reduce((a, s) => a + (s.totalPaket || 0), 0);
+      const pct = totalPagu > 0 ? (totalReal / totalPagu * 100) : 0;
+      return { bulan: b, pagu: totalPagu, real: totalReal, paket: totalPaket, pct, color: COMP_COLORS[i % COMP_COLORS.length] };
+    });
+
+    renderCompSummary(monthTotals);
+    renderCompChart(monthTotals);
+    renderCompTable(sortedBulan);
+  }
+
+  // ── SUMMARY CARDS ────────────────────────────────────────
+  function renderCompSummary(months) {
+    const maxReal = Math.max(...months.map(m => m.real), 1);
+    const row = document.getElementById('comp-summary-row');
+    row.innerHTML = '';
+    months.forEach(m => {
+      const barW = (m.real / maxReal * 100).toFixed(1);
+      const pctClass = m.pct >= 70 ? 'pct-hi' : m.pct >= 40 ? 'pct-mid' : 'pct-lo';
+      row.innerHTML += `
+        <div class="comp-summary-card">
+          <div class="cs-accent" style="background:${m.color.bar}"></div>
+          <div class="cs-month">${m.bulan}</div>
+          <div class="cs-nilai">${fmt(m.real)}</div>
+          <div class="cs-pct" style="color:${m.color.label}">
+            ${m.pct.toFixed(1)}% serapan
+            &nbsp;<span class="comp-pct-pill ${pctClass}">${m.pct.toFixed(0)}%</span>
+          </div>
+          <div style="font-size:10px;color:var(--slate-400);margin-top:2px">${m.paket} paket · Pagu ${fmt(m.pagu)}</div>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width:${barW}%;background:${m.color.bar}"></div></div>
+        </div>`;
+    });
+  }
+
+  // ── BAR CHART ────────────────────────────────────────────
+  function renderCompChart(months) {
+    const maxVal = Math.max(...months.map(m => m.pagu), 1);
+    const steps = 5;
+
+    // Y-axis
+    const yaxis = document.getElementById('comp-chart-yaxis');
+    yaxis.innerHTML = '';
+    for (let i = steps; i >= 0; i--) {
+      const v = maxVal * i / steps;
+      const s = document.createElement('span');
+      s.textContent = fmtShort(v);
+      yaxis.appendChild(s);
+    }
+
+    // Bars
+    const barsEl = document.getElementById('comp-chart-bars');
+    barsEl.innerHTML = '';
+    months.forEach(m => {
+      const hPagu = (m.pagu / maxVal * 180);
+      const hReal = (m.real / maxVal * 180);
+      const group = document.createElement('div');
+      group.className = 'cbar-group';
+      group.innerHTML = `
+        <div class="cbar-pair">
+          <div class="cbar" style="height:${hPagu}px;background:${m.color.pagu};">
+            <div class="cbar-tooltip">Pagu: ${fmt(m.pagu)}</div>
+          </div>
+          <div class="cbar" style="height:${hReal}px;background:${m.color.bar};">
+            <div class="cbar-tooltip">Realisasi: ${fmt(m.real)} (${m.pct.toFixed(1)}%)</div>
+          </div>
+        </div>
+        <div class="cbar-label">${m.bulan}</div>`;
+      barsEl.appendChild(group);
+    });
+
+    // Legend
+    const legend = document.getElementById('comp-legend');
+    legend.innerHTML = `
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--slate-500)">
+        <div style="width:12px;height:12px;border-radius:3px;background:#cbd5e1"></div> Pagu RUP
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--slate-500)">
+        <div style="width:12px;height:12px;border-radius:3px;background:var(--blue)"></div> Realisasi
+      </div>`;
+  }
+
+  // ── DETAIL TABLE ─────────────────────────────────────────
+  function renderCompTable(sortedBulan) {
+    // Gather all satker names across all months
+    const satkerSet = new Set();
+    sortedBulan.forEach(b => {
+      compDataCache[b].rekapSatker.forEach(s => satkerSet.add(s.namaSatker));
+    });
+    const satkers = [...satkerSet].sort();
+
+    // Head
+    const head = document.getElementById('comp-table-head');
+    head.innerHTML = `<tr>
+      <th>Satuan Kerja</th>
+      ${sortedBulan.map(b => `<th>${b}<br><span style="font-weight:500;font-size:9px;letter-spacing:0">Realisasi · Serapan</span></th>`).join('')}
+    </tr>`;
+
+    // Body
+    const tbody = document.getElementById('comp-table-body');
+    tbody.innerHTML = '';
+
+    // Build lookup
+    const lookup = {};
+    sortedBulan.forEach(b => {
+      lookup[b] = {};
+      compDataCache[b].rekapSatker.forEach(s => { lookup[b][s.namaSatker] = s; });
+    });
+
+    satkers.forEach(name => {
+      const row = document.createElement('tr');
+      let cells = `<td>${name}</td>`;
+      sortedBulan.forEach(b => {
+        const s = lookup[b][name];
+        if (!s) { cells += `<td style="color:var(--slate-300)">—</td>`; return; }
+        const pct = s.nilaiRUP > 0 ? (s.nilaiReal / s.nilaiRUP * 100) : 0;
+        const pctClass = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+        cells += `<td>${fmt(s.nilaiReal)}<span class="comp-pct-pill ${pctClass}">${pct.toFixed(0)}%</span></td>`;
+      });
+      row.innerHTML = cells;
+      tbody.appendChild(row);
+    });
+
+    // Totals row
+    const totRow = document.createElement('tr');
+    totRow.style.fontWeight = '700';
+    totRow.style.background = 'var(--slate-50)';
+    let totCells = `<td>TOTAL</td>`;
+    sortedBulan.forEach(b => {
+      const d = compDataCache[b];
+      const totalReal = d.rekapSatker.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+      const totalPagu = d.rekapSatker.reduce((a, s) => a + (s.nilaiRUP  || 0), 0);
+      const pct = totalPagu > 0 ? (totalReal / totalPagu * 100) : 0;
+      const pctClass = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+      totCells += `<td style="color:var(--slate-900)">${fmt(totalReal)}<span class="comp-pct-pill ${pctClass}">${pct.toFixed(0)}%</span></td>`;
+    });
+    totRow.innerHTML = totCells;
+    tbody.appendChild(totRow);
+
+    document.getElementById('comp-table-title').textContent =
+      `Detail Realisasi per Satuan Kerja · ${sortedBulan.join(', ')}`;
+  }
+
+  // ── CLOSE DROPDOWNS ON OUTSIDE CLICK ────────────────────
+  document.addEventListener('click', e => {
+    const satkerWrap = document.getElementById('satker-dropdown-wrap');
+    if (satkerWrap && !satkerWrap.contains(e.target)) {
       document.getElementById('satker-dropdown').classList.remove('open');
       document.getElementById('satker-btn').classList.remove('open');
     }
   });
+  function fmtShort(n) {
+    if (n >= 1e12) return (n/1e12).toFixed(1) + 'T';
+    if (n >= 1e9)  return (n/1e9).toFixed(1)  + 'M';
+    if (n >= 1e6)  return (n/1e6).toFixed(1)  + 'Jt';
+    if (n >= 1e3)  return (n/1e3).toFixed(0)  + 'Rb';
+    return n.toFixed(0);
+  }
 
   // ── MAIN TABLE ───────────────────────────────────────────
   function renderTable(data) {
