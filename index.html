@@ -1465,6 +1465,38 @@
   }
 
   // ── FETCH ────────────────────────────────────────────────
+  // ── NORMALISASI DATA DARI GAS ───────────────────────────
+  // Memastikan semua field yang diakses frontend selalu ada
+  function normalizeSatker(s) {
+    if (!s) s = {};
+    if (!s.caraPengadaan) s.caraPengadaan = {};
+    if (!s.caraPengadaan.Penyedia)  s.caraPengadaan.Penyedia  = { count: 0, nilai: 0 };
+    if (!s.caraPengadaan.Swakelola) s.caraPengadaan.Swakelola = { count: 0, nilai: 0 };
+    if (!s.progresStatus) s.progresStatus = {};
+    if (!s.progresStatus.Selesai)  s.progresStatus.Selesai  = { count: 0, nilai: 0 };
+    if (!s.progresStatus.Berjalan) s.progresStatus.Berjalan = { count: 0, nilai: 0 };
+    s.namaSatker      = s.namaSatker      || 'Tanpa Nama';
+    s.totalPaket      = s.totalPaket      || 0;
+    s.dilaksanakan    = s.dilaksanakan    || 0;
+    s.belumDikerjakan = s.belumDikerjakan || 0;
+    s.nilaiRUP        = s.nilaiRUP        || 0;
+    s.nilaiReal       = s.nilaiReal       || 0;
+    return s;
+  }
+
+  function normalizePackage(p) {
+    if (!p) p = {};
+    p.satker    = p.satker    || '';
+    p.kode      = p.kode      || '';
+    p.nama      = p.nama      || '-';
+    p.jenis     = p.jenis     || 'Jasa Lainnya';
+    p.metode    = p.metode    || 'Swakelola';
+    p.status    = p.status    || 'Belum Realisasi';
+    p.pagu      = parseFloat(p.pagu)      || 0;
+    p.realisasi = parseFloat(p.realisasi) || 0;
+    return p;
+  }
+
   // ── JSONP FALLBACK (untuk mengatasi CORS) ───────────────
   function fetchViaJsonp(url) {
     return new Promise((resolve, reject) => {
@@ -1542,11 +1574,11 @@
 
       if (json.error) throw new Error('Error dari server: ' + json.error);
 
-      allData = json.rekapSatker || [];
-      allPkg  = json.allPackages  || [];
+      allData = (json.rekapSatker || []).map(normalizeSatker);
+      allPkg  = (json.allPackages || []).map(normalizePackage);
 
       if (!allData.length && !allPkg.length) {
-        throw new Error(`Tidak ada data untuk bulan ${bulan}. Pastikan sheet "Realisasi_${bulan}" ada dan berisi data.`);
+        throw new Error('Tidak ada data untuk bulan ' + bulan + '. Pastikan sheet "RUP_' + bulan + '" dan "Realisasi_' + bulan + '" ada dan berisi data.');
       }
 
       setLoaderProgress(85, 'Merender dashboard…');
@@ -2097,7 +2129,10 @@
           const res  = await fetch(url);
           const json = await res.json();
           if (json.error) throw new Error(json.error);
-          compDataCache[bulan] = { rekapSatker: json.rekapSatker || [], allPackages: json.allPackages || [] };
+          compDataCache[bulan] = {
+            rekapSatker: (json.rekapSatker || []).map(normalizeSatker),
+            allPackages: (json.allPackages  || []).map(normalizePackage)
+          };
           done++;
           setLoaderProgress(10 + Math.round(done / toFetch.length * 80), `Memuat ${bulan}…`);
         }
