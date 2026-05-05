@@ -266,11 +266,11 @@
     .card-efis    { background: linear-gradient(135deg, #065f46, #10b981); }
 
     /* ─── BOTTOM SECTION ─────────────────────────────── */
-    /* Layout: [filter kiri 190px] [tabel tengah flex] [jenis kanan 210px] */
+    /* Layout: [filter kiri] [tabel tengah] [jenis kanan] */
     #bottom-section {
       flex: 1; min-height: 0;
       display: grid;
-      grid-template-columns: 190px 1fr 210px;
+      grid-template-columns: 200px 1fr 220px;
       grid-template-areas: "side table jenis";
       gap: 10px;
     }
@@ -287,10 +287,6 @@
       grid-area: jenis;
       display: flex; flex-direction: column;
       overflow: hidden; min-height: 0;
-    }
-    #jenis-panel-wrap .panel {
-      flex: 1; overflow: hidden;
-      display: flex; flex-direction: column;
     }
 
     .panel {
@@ -1007,65 +1003,54 @@
 
     /* ── RESPONSIVE ──────────────────────────────────── */
     /* Tablet landscape (≤1280px): kurangi kolom jenis */
-    /* ── RESPONSIVE ──────────────────────────────────────── */
-    /* Large desktop — default: 3 kolom */
-
-    /* ≤1280px: sedikit kecilkan kolom samping */
     @media (max-width: 1280px) {
-      #bottom-section { grid-template-columns: 175px 1fr 195px; }
+      #bottom-section { grid-template-columns: 190px 1fr 200px; }
       #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* ≤1024px: kolom jenis turun, side panel horizontal */
+    /* Tablet portrait (≤1024px): sembunyikan panel kiri, jenis di bawah */
     @media (max-width: 1024px) {
       body { height: auto; overflow: auto; }
       #main-wrapper { overflow: visible; padding: 10px 12px; }
       #bottom-section {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         grid-template-areas:
-          "side jenis"
-          "table table";
+          "table"
+          "side"
+          "jenis";
         height: auto; min-height: unset;
       }
-      #side-panel { flex-direction: column; }
-      #jenis-panel-wrap { }
-      #table-panel { min-height: 420px; }
+      #side-panel { flex-direction: row; flex-wrap: wrap; }
+      #side-panel .panel { flex: 1; min-width: 200px; }
+      #jenis-panel-wrap { flex-direction: row; }
+      #table-panel { min-height: 400px; }
       #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* ≤768px: full single column */
+    /* Mobile (≤768px): single column everything */
     @media (max-width: 768px) {
-      #topbar { padding: 8px 10px; gap: 5px; flex-wrap: wrap; }
-      .topbar-label h1 { font-size: 11px; }
+      #topbar { padding: 8px 12px; gap: 6px; }
+      .topbar-label h1 { font-size: 12px; }
       .topbar-label p  { display: none; }
-      .topbar-badge    { width: 28px; height: 28px; font-size: 12px; }
-      .nav-tab { padding: 5px 8px; font-size: 11px; }
+      .topbar-badge    { width: 30px; height: 30px; font-size: 13px; }
+      #nav-tabs .nav-tab { padding: 5px 9px; font-size: 11px; }
       #dashboard-controls { gap: 4px; }
-      .btn { padding: 6px 9px; font-size: 11px; }
-      #main-wrapper { padding: 8px 8px; gap: 8px; }
-      #cards-row { grid-template-columns: repeat(2, 1fr); }
-      #cards-row .stat-card:last-child { grid-column: 1 / -1; }
-      #bottom-section {
-        grid-template-columns: 1fr;
-        grid-template-areas: "table" "side" "jenis";
-        height: auto; min-height: unset;
-      }
-      #side-panel { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-      #side-panel .panel { flex: 1; min-width: 140px; max-height: 220px; }
-      #jenis-panel-wrap .panel { max-height: 220px; }
-      #table-panel { min-height: 360px; }
-      #tbl-search { width: 120px; min-width: 90px; }
+      .btn { padding: 6px 10px; font-size: 11px; }
+      #main-wrapper { padding: 8px 10px; gap: 8px; }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
+      #bottom-section { grid-template-areas: "table" "side" "jenis"; }
+      #tbl-search { width: 130px; }
       #table-toolbar { flex-wrap: wrap; gap: 6px; }
       .stat-card .value { font-size: 12px; }
       .stat-card .label { font-size: 8px; }
     }
 
-    /* ≤480px: very small */
+    /* Small mobile (≤480px) */
     @media (max-width: 480px) {
-      #cards-row { grid-template-columns: 1fr 1fr; }
-      .topbar-badge { display: none; }
-      .nav-tab { padding: 5px 6px; font-size: 10px; gap: 3px; }
-      #side-panel .panel { min-width: 100%; }
+      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(5), .stat-card:nth-child(6) { grid-column: span 1; }
+      #nav-tabs { gap: 2px; }
+      .nav-tab span:not(:first-child) { display: none; }
     }
 
     @media print {
@@ -1073,7 +1058,7 @@
       #modal-overlay, #toast, #loader { display: none !important; }
       body { overflow: visible; height: auto; }
       #main-wrapper { overflow: visible; }
-      #bottom-section { grid-template-columns: 1fr; grid-template-areas: "table" "side" "jenis"; }
+      #bottom-section { grid-template-columns: 1fr; }
     }
 
     /* ── MODAL JENIS SUMMARY ROW ────────────────────────── */
@@ -1748,6 +1733,7 @@
 
       allData = (json.rekapSatker || []).map(normalizeSatker);
       allPkg  = (json.allPackages || []).map(normalizePackage);
+      rebuildPkgIndex();
 
       if (!allData.length && !allPkg.length) {
         throw new Error('Tidak ada data untuk bulan ' + bulan + '. Pastikan sheet "RUP_' + bulan + '" dan "Realisasi_' + bulan + '" ada dan berisi data.');
@@ -1860,13 +1846,17 @@
   }
 
   function buildSidePanel(pkgs) {
-    // ── Metode: selalu dari semua paket ──────────────────
+    // ── Metode: hitung breakdown status per metode ────────
     const metodeMap = {};
     pkgs.forEach(p => {
       const m = normMetode(p.metode);
-      if (!metodeMap[m]) metodeMap[m] = { count: 0, nilai: 0 };
+      if (!metodeMap[m]) metodeMap[m] = { count: 0, nilai: 0, selesai: 0, berjalan: 0, belum: 0 };
       metodeMap[m].count++;
       metodeMap[m].nilai += p.pagu;
+      const st = (p.status || '').toLowerCase();
+      if      (/selesai/.test(st))                  metodeMap[m].selesai++;
+      else if (/berjalan|proses|sedang/.test(st))   metodeMap[m].berjalan++;
+      else                                           metodeMap[m].belum++;
     });
     const metodes = Object.entries(metodeMap).sort((a, b) => b[1].nilai - a[1].nilai);
 
@@ -1876,9 +1866,15 @@
       const row = document.createElement('div');
       row.className = 'mini-row' + (activeFilterMetode === name ? ' active' : '');
       row.title = `Klik untuk filter: ${name}`;
+      const selesaiBadge  = d.selesai  > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#d1fae5;color:#065f46">${d.selesai}✓</span>` : '';
+      const berjalanBadge = d.berjalan > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#dbeafe;color:#1e40af">${d.berjalan}▶</span>` : '';
+      const belumBadge    = d.belum    > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#fef3c7;color:#92400e">${d.belum}○</span>` : '';
       row.innerHTML = `
         <span class="name">${name}</span>
-        <span class="chip chip-default">${d.count} pkt</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">
+          <span class="chip chip-default" style="font-size:9px">${d.count} pkt</span>
+          <div style="display:flex;gap:2px">${selesaiBadge}${berjalanBadge}${belumBadge}</div>
+        </div>
       `;
       row.addEventListener('click', () => toggleFilterMetode(name));
       pmEl.appendChild(row);
@@ -1901,7 +1897,6 @@
 
     const psEl = document.getElementById('panel-status');
     psEl.innerHTML = '';
-
     statuses.forEach(([name, d]) => {
       const chipClass = /selesai/i.test(name) ? 'chip-selesai'
                       : /berjalan|proses|sedang/i.test(name) ? 'chip-berjalan'
@@ -1983,23 +1978,24 @@
 
   // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
-    // Gunakan field jenis yang sudah dinormalisasi code.gs (kolom E sheet RUP)
-    const jRaw = (pkg.jenis || '').trim();
-    if (jRaw && jRaw !== '-') {
-      // Cari exact match (case-insensitive)
-      const found = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
-      if (found) return found.key;
-      // Cari partial match
+    // 1. Utamakan field jenis yang sudah dinormalisasi dari code.gs
+    if (pkg.jenis && pkg.jenis.trim() && pkg.jenis.trim() !== '-') {
+      const jRaw = pkg.jenis.trim();
+      // Exact match dulu
+      const exact = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
+      if (exact) return exact.key;
+      // Partial match
       const partial = JENIS_DEF.find(j =>
         jRaw.toLowerCase().includes(j.key.toLowerCase()) ||
         j.key.toLowerCase().includes(jRaw.toLowerCase())
       );
       if (partial) return partial.key;
+      return jRaw; // kembalikan nilai asli jika tidak cocok
     }
-    // Fallback: deteksi dari nama paket (semua JENIS_DEF termasuk Jasa Lainnya)
+    // 2. Fallback: deteksi dari nama paket
     const nm = (pkg.nama || '').toLowerCase();
-    for (const jd of JENIS_DEF) {
-      if (jd.match && jd.match(nm)) return jd.key;
+    for (let i = 0; i < JENIS_DEF.length - 1; i++) {
+      if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
     }
     return 'Jasa Lainnya';
   }
@@ -2623,12 +2619,21 @@
   }
 
   // ── MAIN TABLE ───────────────────────────────────────────
+  // Buat lookup cepat: satker → array paket, dihitung sekali saat data masuk
+  let pkgBySatker = {};
+  function rebuildPkgIndex() {
+    pkgBySatker = {};
+    allPkg.forEach(p => {
+      if (!pkgBySatker[p.satker]) pkgBySatker[p.satker] = [];
+      pkgBySatker[p.satker].push(p);
+    });
+  }
+
   function renderTable(data) {
     const tbody = document.getElementById('satkerBody');
     tbody.innerHTML = '';
     document.getElementById('toolbar-count').textContent = `${data.length} Satker`;
 
-    // Hanya tampilkan satker yang memiliki paket
     const filtered = data.filter(s => s.totalPaket > 0);
 
     if (!filtered.length) {
@@ -2637,19 +2642,24 @@
     }
 
     filtered.forEach((s, idx) => {
-      const pct = s.nilaiRUP > 0 ? (s.nilaiReal / s.nilaiRUP * 100) : 0;
-      const pctStr = pct.toFixed(1) + '%';
+      // ── Hitung langsung dari allPkg ────────────────────
+      const pkgs      = pkgBySatker[s.namaSatker] || [];
+      const nilaiReal = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
+      const nilaiRUP  = s.nilaiRUP > 0 ? s.nilaiRUP
+                      : pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
+      const dilaks    = pkgs.filter(p => p.realisasi > 0).length;
+      const totalPkt  = pkgs.length || s.totalPaket;
+
+      // Efisiensi hanya dari paket yang sudah terealisasi
+      const pkgsReal  = pkgs.filter(p => p.realisasi > 0);
+      const efisiensi = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+
+      const pct        = nilaiRUP > 0 ? (nilaiReal / nilaiRUP * 100) : 0;
+      const pctStr     = pct.toFixed(1) + '%';
       const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
-
-      // Efisiensi: hanya dari paket yang ada realisasi (join RUP)
-      // Ambil dari paket yang satker-nya cocok dan realisasi > 0
-      const pkgsSatker = allPkg.filter(p => p.satker === s.namaSatker && p.realisasi > 0);
-      const efisiensi  = pkgsSatker.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
-      const hasReal    = s.nilaiReal > 0;
-
-      const efisClass = !hasReal ? 'efisiensi-zero'
-                      : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
-      const efisStr   = !hasReal ? '—' : fmt(efisiensi);
+      const efisClass  = nilaiReal === 0 ? 'efisiensi-zero'
+                       : efisiensi >= 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+      const efisStr    = nilaiReal === 0 ? '—' : fmt(efisiensi);
 
       const tr = document.createElement('tr');
       tr.className = 'anim-row';
@@ -2658,14 +2668,14 @@
       tr.innerHTML = `
         <td>
           <div class="satker-name">${s.namaSatker}</div>
-          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket terealisasi</div>
+          <div class="satker-sub">${dilaks} dari ${totalPkt} paket terealisasi</div>
         </td>
-        <td class="c"><span class="badge-paket">${s.totalPaket}</span></td>
-        <td class="c"><span class="badge-paket ${s.dilaksanakan > 0 ? 'badge-jalan' : ''}">${s.dilaksanakan}</span></td>
-        <td class="r"><span class="money">${fmt(s.nilaiRUP)}</span></td>
+        <td class="c"><span class="badge-paket">${totalPkt}</span></td>
+        <td class="c"><span class="badge-paket ${dilaks > 0 ? 'badge-jalan' : ''}">${dilaks}</span></td>
+        <td class="r"><span class="money">${fmt(nilaiRUP)}</span></td>
         <td class="r">
           <div class="prog-wrap">
-            <span class="money" style="font-size:11px;">${fmt(s.nilaiReal)}</span>
+            <span class="money" style="font-size:11px;">${fmt(nilaiReal)}</span>
             <span class="prog-pct pct-${colorClass}">${pctStr}</span>
             <div class="prog-track"><div class="prog-fill fill-${colorClass}" style="width:${Math.min(pct,100)}%"></div></div>
           </div>
