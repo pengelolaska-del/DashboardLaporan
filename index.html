@@ -1849,7 +1849,8 @@
     p.kode      = p.kode      || '';
     p.nama      = p.nama      || '-';
     p.jenis     = p.jenis     || 'Jasa Lainnya';
-    p.metode    = p.metode    || 'Swakelola';
+    p.cara      = p.cara      || 'Penyedia';  // C = Cara Pengadaan
+    p.metode    = p.metode    || 'Swakelola'; // D = Metode Pengadaan
     p.status    = normStatus(p.status);
     p.pagu      = parseFloat(p.pagu)      || 0;
     p.realisasi = parseFloat(p.realisasi) || 0;
@@ -2050,7 +2051,14 @@
    */
   function normMetode(m) {
     if (!m || m.trim() === '-' || m.trim() === '') return 'Swakelola';
-    return m.trim();
+    const t = m.trim();
+    if (/^e[\-\s]?katalog$/i.test(t))           return 'E-Katalog';
+    if (/^e[\-\s]?purchasing$/i.test(t))        return 'E-Purchasing';
+    if (/^toko[\s]?daring$/i.test(t))            return 'Toko Daring';
+    if (/^tender[\s]?cepat$/i.test(t))           return 'Tender Cepat';
+    if (/^pengadaan[\s]?langsung$/i.test(t))     return 'Pengadaan Langsung';
+    if (/^non[\s\-]?tender$/i.test(t))           return 'Non Tender';
+    return t;
   }
 
   function buildSidePanel(pkgs) {
