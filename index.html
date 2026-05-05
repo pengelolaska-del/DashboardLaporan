@@ -2667,10 +2667,9 @@
       const nilaiReal  = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
       const totalPkt   = pkgs.length || s.totalPaket;
       const dilaks     = pkgs.filter(p => p.realisasi > 0).length;
-      // Efisiensi: hanya dari paket yang sudah terealisasi
-      const efisiensi  = pkgs
-        .filter(p => p.realisasi > 0)
-        .reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+      // Efisiensi = Pagu RUP - Realisasi (selisih keseluruhan)
+      // Jika belum ada realisasi sama sekali → tampilkan '—'
+      const efisiensi  = nilaiRUP - nilaiReal;
 
       const pct        = nilaiRUP > 0 ? (nilaiReal / nilaiRUP * 100) : 0;
       const pctStr     = pct.toFixed(1) + '%';
@@ -2836,47 +2835,47 @@
       const jenis    = detectJenis(p);
       const jenisDef = JENIS_DEF.find(j => j.key === jenis) || JENIS_DEF[3];
 
-      // Efisiensi: pagu - realisasi (hanya jika ada realisasi, i.e. kode RUP match)
-      // hasReal: hanya true jika ada join data Realisasi via Kode RUP
-      const hasReal    = p.realisasi > 0;
-      const efisiensi  = hasReal ? (p.pagu - p.realisasi) : null;
+      // Realisasi: tampilkan Rp 0 jika belum ada realisasi
+      // Efisiensi: tampilkan '—' jika belum realisasi, atau pagu-realisasi jika sudah
+      const belumReal  = p.status === 'Belum Realisasi' || p.realisasi === 0;
+      const realStr    = fmt(p.realisasi);           // selalu tampil (Rp 0 jika kosong)
+      const efisiensi  = belumReal ? null : (p.pagu - p.realisasi);
       const efisClass  = efisiensi === null ? 'efisiensi-zero'
-                       : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+                       : efisiensi >= 0 ? 'efisiensi-pos' : 'efisiensi-neg';
       const efisStr    = efisiensi === null ? '—'
                        : efisiensi >= 0 ? fmt(efisiensi)
-                       : `▲ ${fmt(Math.abs(efisiensi))}`;
+                       : '▲ ' + fmt(Math.abs(efisiensi));
 
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-500)">${p.kode || '—'}</td>
-        <td style="max-width:220px;word-break:break-word;font-size:11px">${p.nama || '—'}</td>
-        <td>
-          <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;background:${jenisDef.bg};color:${jenisDef.color};white-space:nowrap">
-            ${jenisDef.icon} ${jenis}
-          </span>
-        </td>
-        <td style="font-size:11px">${normMetode(p.metode) || '—'}</td>
-        <td><span class="chip ${chipClass}">${p.status}</span></td>
-        <td class="r"><span class="money">${fmt(p.pagu)}</span></td>
-        <td class="r"><span class="money">${fmt(p.realisasi)}</span></td>
-        <td class="r"><span class="money ${efisClass}">${efisStr}</span></td>
-      `;
+      tr.innerHTML =
+        '<td style="font-family:&quot;JetBrains Mono&quot;,monospace;font-size:10px;color:var(--slate-500)">' + (p.kode || '—') + '</td>' +
+        '<td style="max-width:220px;word-break:break-word;font-size:11px">' + (p.nama || '—') + '</td>' +
+        '<td><span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;background:' + jenisDef.bg + ';color:' + jenisDef.color + ';white-space:nowrap">' + jenisDef.icon + ' ' + jenis + '</span></td>' +
+        '<td style="font-size:11px">' + (normMetode(p.metode) || '—') + '</td>' +
+        '<td><span class="chip ' + chipClass + '">' + p.status + '</span></td>' +
+        '<td class="r"><span class="money">' + fmt(p.pagu) + '</span></td>' +
+        '<td class="r"><span class="money' + (belumReal ? ' efisiensi-zero' : '') + '">' + realStr + '</span></td>' +
+        '<td class="r"><span class="money ' + efisClass + '">' + efisStr + '</span></td>';
       tbody.appendChild(tr);
     });
 
     // Totals footer row
     const totalPagu = pkgs.reduce((a, p) => a + p.pagu, 0);
     const totalReal = pkgs.reduce((a, p) => a + p.realisasi, 0);
-    // Efisiensi = total pagu RUP - total realisasi (semua paket)
-    const totalEfis = totalPagu - totalReal;
-    const efisFooterClass = totalEfis >= 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+    // Efisiensi = Pagu RUP - Realisasi (selisih total)
+    // Hanya dihitung dari paket yang sudah realisasi
+    const pkgsReal    = pkgs.filter(p => p.realisasi > 0 && p.status !== 'Belum Realisasi');
+    const totalEfis   = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    const efisFooterClass = totalReal === 0 ? 'efisiensi-zero'
+                          : totalEfis >= 0  ? 'efisiensi-pos' : 'efisiensi-neg';
+    const efisFooterStr   = totalReal === 0 ? '—' : fmt(Math.abs(totalEfis));
     const tfoot = document.createElement('tr');
     tfoot.style.cssText = 'font-weight:700;background:var(--slate-50);border-top:2px solid var(--slate-200)';
     tfoot.innerHTML =
       '<td colspan="5" style="font-size:11px;color:var(--slate-600)">TOTAL · ' + pkgs.length + ' paket</td>' +
       '<td class="r"><span class="money">' + fmt(totalPagu) + '</span></td>' +
       '<td class="r"><span class="money">' + fmt(totalReal) + '</span></td>' +
-      '<td class="r"><span class="money ' + efisFooterClass + '">' + fmt(Math.abs(totalEfis)) + '</span></td>';
+      '<td class="r"><span class="money ' + efisFooterClass + '">' + efisFooterStr + '</span></td>';
     tbody.appendChild(tfoot);
   }
 
