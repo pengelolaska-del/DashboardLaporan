@@ -342,7 +342,7 @@
     .mini-row:hover { background: var(--slate-50); transform: translateX(2px); }
     .mini-row.active { background: #eff6ff; border-bottom-color: transparent; box-shadow: inset 0 0 0 1.5px var(--blue); }
     .mini-row.active .name { color: var(--blue); font-weight: 700; }
-    .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+    .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; font-size: 11px; word-break: break-word; white-space: normal; line-height: 1.35; }
     .mini-row .chip { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 5px; white-space: nowrap; }
 
     .chip-selesai  { background: #d1fae5; color: #065f46; }
@@ -1089,6 +1089,130 @@
     .efisiensi-neg { color: #dc2626; font-weight: 700; }
     .efisiensi-zero { color: var(--slate-400); }
 
+    /* ── COLUMN SETTINGS OVERLAY ────────────────────────── */
+    #colsettings-overlay {
+      display: none; position: fixed; inset: 0; z-index: 8500;
+      background: rgba(15,23,42,.5); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #colsettings-overlay.open { display: flex; }
+    #colsettings-box {
+      background: var(--white); border-radius: 18px;
+      width: 100%; max-width: 640px;
+      max-height: 90vh;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: fadeSlideIn .22s ease both;
+    }
+    #colsettings-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    #colsettings-header h3 {
+      font-size: 14px; font-weight: 800; color: var(--slate-900);
+      display: flex; align-items: center; gap: 8px;
+    }
+    #colsettings-close {
+      width: 28px; height: 28px; border-radius: 7px;
+      border: 1px solid var(--slate-200); background: transparent;
+      cursor: pointer; font-size: 15px; color: var(--slate-500);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    #colsettings-close:hover { background: var(--slate-100); }
+    #colsettings-tabs {
+      display: flex; gap: 4px; padding: 10px 20px 0;
+      border-bottom: 1px solid var(--slate-200);
+      flex-shrink: 0;
+    }
+    .cs-tab {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 7px 14px; border-radius: 8px 8px 0 0; border: none;
+      cursor: pointer; transition: all .15s;
+      color: var(--slate-500); background: transparent;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .cs-tab:hover { color: var(--slate-700); background: var(--slate-50); }
+    .cs-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: var(--white); }
+    .cs-tab-panel { display: none; }
+    .cs-tab-panel.active { display: flex; flex-direction: column; gap: 10px; }
+    #colsettings-body {
+      padding: 16px 20px; display: flex; flex-direction: column; gap: 0;
+      overflow-y: auto; flex: 1;
+    }
+    #colsettings-body::-webkit-scrollbar { width: 4px; }
+    #colsettings-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+    .cs-section-title {
+      font-size: 10px; font-weight: 800; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--slate-400);
+      padding: 8px 0 6px; margin-top: 4px;
+    }
+    .cs-col-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 72px;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 14px;
+      border: 1px solid var(--slate-100);
+      border-radius: 10px;
+      background: var(--slate-50);
+      transition: border-color .15s;
+      margin-bottom: 8px;
+    }
+    .cs-col-row:hover { border-color: var(--slate-300); background: var(--white); }
+    .cs-col-label {
+      font-size: 12px; font-weight: 600; color: var(--slate-700);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .cs-col-label .cs-col-icon { font-size: 15px; flex-shrink: 0; }
+    /* Big, easy-to-grab slider */
+    .cs-col-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(to right, var(--blue) 0%, var(--blue) var(--pct, 50%), var(--slate-200) var(--pct, 50%), var(--slate-200) 100%);
+      outline: none; cursor: pointer;
+      transition: height .15s;
+    }
+    .cs-col-slider:hover { height: 10px; }
+    .cs-col-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--blue);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(37,99,235,.35);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cs-col-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 3px 10px rgba(37,99,235,.45);
+    }
+    .cs-col-slider::-moz-range-thumb {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--blue);
+      cursor: pointer; box-shadow: 0 2px 6px rgba(37,99,235,.35);
+    }
+    .cs-col-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 700;
+      color: var(--blue); text-align: center;
+      background: #eff6ff; padding: 4px 8px;
+      border-radius: 7px; white-space: nowrap;
+      min-width: 60px;
+    }
+    #colsettings-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--slate-100);
+      display: flex; gap: 8px; justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
     /* ── DEBUG PANEL ──────────────────────────────────── */
     #debug-overlay {
       display: none; position: fixed; inset: 0; z-index: 9000;
@@ -1197,6 +1321,7 @@
       <div id="bulan-dropdown"></div>
     </div>
     <button class="btn btn-ghost" onclick="window.print()">🖨 Cetak</button>
+    <button class="btn btn-ghost" id="btn-col-settings" onclick="openColSettings()" title="Atur lebar kolom tabel">⚙ Kolom</button>
     <button class="btn btn-ghost" id="btn-debug" onclick="runDebug()" title="Cek mapping kolom sheet">🔍 Debug Kolom</button>
     <button class="btn btn-primary" onclick="refreshData()">↺ Segarkan</button>
   </div>
@@ -1467,6 +1592,27 @@
 <!-- ── TOAST ──────────────────────────────────────────────── -->
 <div id="toast"></div>
 
+<!-- ── COLUMN SETTINGS OVERLAY ───────────────────────────── -->
+<div id="colsettings-overlay" onclick="handleColSettingsOutside(event)">
+  <div id="colsettings-box">
+    <div id="colsettings-header">
+      <h3>⚙ Pengaturan Tampilan</h3>
+      <button id="colsettings-close" onclick="closeColSettings()">✕</button>
+    </div>
+    <div id="colsettings-tabs">
+      <button class="cs-tab active" onclick="switchCsTab('tabel', this)">📊 Kolom Tabel</button>
+      <button class="cs-tab" onclick="switchCsTab('panel', this)">📐 Lebar & Tinggi Panel</button>
+    </div>
+    <div id="colsettings-body">
+      <!-- Generated dynamically -->
+    </div>
+    <div id="colsettings-footer">
+      <button class="btn btn-ghost" onclick="resetColWidths()">↺ Reset Default</button>
+      <button class="btn btn-primary" onclick="closeColSettings()">✓ Tutup</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── DEBUG OVERLAY ─────────────────────────────────────── -->
 <div id="debug-overlay">
   <div id="debug-box">
@@ -1484,7 +1630,7 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxVDJCI2gypCIm4Hcu-ovnEFNeyu22mma8Ilq7ID8DGnFv3lUbmMIz9TZmWYM84i2R7cg/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxZ_mgfl6FXIVJXxopkBz9jpZuxH1XxIFhm5RYXHSa8W_Yh9fKu7bvjaQs5NMbsfqmkBw/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1804,17 +1950,23 @@
     const ep = pkgs.filter(p => /e[\-\s]?katalog|toko[\s]?daring|e[\-\s]?purchasing/i.test(p.metode));
     const epNilai = ep.reduce((a, p) => a + (p.pagu || 0), 0);
 
-    // Total Realisasi: sum nilaiReal dari semua satker (join RUP-Realisasi via kode)
-    const totReal = satkers.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+    // ── Nilai dari RUP_<bulan> ──────────────────────────────
+    // totRUP  = total pagu semua paket dari sheet RUP_<bulan>     (sudah dihitung di atas)
+    // penyedia.v & swak.v = pagu per cara pengadaan dari RUP_<bulan>
+
+    // ── Nilai dari Realisasi_<bulan> ─────────────────────────
+    // totReal = total realisasi dari sheet Realisasi_<bulan> (join via Kode RUP)
+    const totReal    = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
     const totPkgReal = pkgs.filter(p => p.realisasi > 0).length;
 
-    // Efisiensi: hanya dari paket yang ada nilai realisasi (join via kode RUP berhasil)
-    const pkgsReal   = pkgs.filter(p => p.realisasi > 0);
-    const paguReal   = pkgsReal.reduce((a, p) => a + p.pagu, 0);   // pagu dari paket yg sudah realisasi
-    const totEfis    = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
-    // Persen efisiensi dari pagu paket yg sudah direalisasikan (bukan total pagu)
-    const pctEfis    = paguReal > 0 ? (totEfis / paguReal * 100) : 0;
-    const pctSerapan = totRUP  > 0 ? (totReal  / totRUP  * 100) : 0;
+    // Efisiensi = Total Pagu RUP − Total Realisasi (selisih keseluruhan)
+    // PERBAIKAN: hanya dari paket yang realisasinya > 0
+    const pkgsWithReal  = pkgs.filter(p => (p.realisasi || 0) > 0);
+    const totRealEfis   = pkgsWithReal.reduce((a, p) => a + (p.realisasi || 0), 0);
+    const paguOfRealPkg = pkgsWithReal.reduce((a, p) => a + (p.pagu      || 0), 0);
+    const totEfis    = paguOfRealPkg - totRealEfis;
+    const pctEfis    = paguOfRealPkg > 0 ? (totEfis / paguOfRealPkg * 100) : 0;
+    const pctSerapan = totRUP > 0 ? (totReal  / totRUP * 100) : 0;
 
     setText('c-rup',          fmt(totRUP));
     setText('c-rup-sub',      totPaket + ' Paket');
@@ -1827,7 +1979,7 @@
     setText('c-real',         fmt(totReal));
     setText('c-real-sub',     totPkgReal + ' Paket · ' + pctSerapan.toFixed(1) + '% Serapan');
     setText('c-efis',         fmt(totEfis));
-    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Pagu Terealisasi');
+    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Total Pagu RUP');
   }
 
   // ── SIDE PANEL ───────────────────────────────────────────
@@ -2668,18 +2820,22 @@
     }
 
     filtered.forEach((s, idx) => {
-      // ── Hitung dari allPkg (sumber kebenaran) ─────────
-      const pkgs     = pkgBySatker[s.namaSatker] || [];
-      // Pagu: dari RUP (s.nilaiRUP sudah benar dari server)
-      const nilaiRUP = s.nilaiRUP > 0 ? s.nilaiRUP
-                     : pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
-      // Realisasi: sum dari allPkg (lebih akurat dari join kode RUP)
-      const nilaiReal  = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
-      const totalPkt   = pkgs.length || s.totalPaket;
+      // ── Sumber data ───────────────────────────────────────
+      // allPkg adalah satu sumber kebenaran — sudah join RUP × Realisasi di server
+      const pkgs = pkgBySatker[s.namaSatker] || [];
+
+      // Nilai RUP   → sum p.pagu dari sheet RUP_<bulan>        (kolom J)
+      const nilaiRUP  = pkgs.reduce((a, p) => a + (p.pagu      || 0), 0);
+      // Realisasi   → sum p.realisasi dari Realisasi_<bulan>   (kolom L)
+      const nilaiReal = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
+      // Efisiensi   → Pagu dari paket yang ada realisasi − Realisasi (abaikan realisasi=0)
+      const pkgsReal2   = pkgs.filter(p => (p.realisasi || 0) > 0);
+      const paguReal2   = pkgsReal2.reduce((a, p) => a + (p.pagu      || 0), 0);
+      const realReal2   = pkgsReal2.reduce((a, p) => a + (p.realisasi || 0), 0);
+      const efisiensi   = paguReal2 - realReal2;
+
+      const totalPkt   = pkgs.length;
       const dilaks     = pkgs.filter(p => p.realisasi > 0).length;
-      // Efisiensi = Pagu RUP - Realisasi (selisih keseluruhan)
-      // Jika belum ada realisasi sama sekali → tampilkan '—'
-      const efisiensi  = nilaiRUP - nilaiReal;
 
       const pct        = nilaiRUP > 0 ? (nilaiReal / nilaiRUP * 100) : 0;
       const pctStr     = pct.toFixed(1) + '%';
@@ -2712,6 +2868,9 @@
       tr.addEventListener('click', () => openModal(s));
       tbody.appendChild(tr);
     });
+
+    // Terapkan lebar kolom kustom setelah render
+    setTimeout(applyColWidths, 0);
   }
   // ── FILTER ───────────────────────────────────────────────
   function filterTable() {
@@ -3033,6 +3192,198 @@
   }
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeDebug();
+  });
+
+  // ── COLUMN SETTINGS ─────────────────────────────────────────
+  // Definisi kolom tabel satker (main table)
+  const COL_DEFS = [
+    { id: 'col-satker',  label: 'Satuan Kerja',        icon: '🏛', thIdx: 0, defaultPx: 280, minPx: 120, maxPx: 500 },
+    { id: 'col-paket',   label: 'Jml Paket',            icon: '📦', thIdx: 1, defaultPx: 70,  minPx: 50,  maxPx: 140 },
+    { id: 'col-real',    label: 'Paket Realisasi',      icon: '✅', thIdx: 2, defaultPx: 80,  minPx: 50,  maxPx: 140 },
+    { id: 'col-pagu',    label: 'Pagu RUP',             icon: '💰', thIdx: 3, defaultPx: 140, minPx: 80,  maxPx: 280 },
+    { id: 'col-serapan', label: 'Realisasi / Serapan',  icon: '📈', thIdx: 4, defaultPx: 160, minPx: 100, maxPx: 300 },
+    { id: 'col-efis',    label: 'Efisiensi',            icon: '💎', thIdx: 5, defaultPx: 130, minPx: 80,  maxPx: 240 },
+  ];
+
+  // Definisi layout panel
+  const PANEL_DEFS = [
+    { id: 'panel-side',  label: 'Lebar Panel Kiri',      icon: '◀', unit: 'px',  defaultVal: 200, minVal: 140, maxVal: 380,
+      apply: v => { document.getElementById('bottom-section').style.gridTemplateColumns = `${v}px 1fr ${panelWidths['panel-jenis']}px`; } },
+    { id: 'panel-jenis', label: 'Lebar Panel Kanan',     icon: '▶', unit: 'px',  defaultVal: 220, minVal: 140, maxVal: 380,
+      apply: v => { document.getElementById('bottom-section').style.gridTemplateColumns = `${panelWidths['panel-side']}px 1fr ${v}px`; } },
+    { id: 'layout-height', label: 'Tinggi Area Bawah',   icon: '↕', unit: 'px',  defaultVal: 0,   minVal: 200, maxVal: 800,
+      apply: v => {
+        const bs = document.getElementById('bottom-section');
+        if (v > 0) { bs.style.height = v + 'px'; bs.style.flex = '0 0 auto'; }
+        else        { bs.style.height = ''; bs.style.flex = '1'; }
+      }
+    },
+  ];
+
+  // State
+  let colWidths    = {};
+  let panelWidths  = {};
+  let currentCsTab = 'tabel';
+
+  COL_DEFS.forEach(c   => { colWidths[c.id]   = c.defaultPx;  });
+  PANEL_DEFS.forEach(p => { panelWidths[p.id]  = p.defaultVal; });
+
+  // Terapkan lebar kolom ke tabel
+  function applyColWidths() {
+    const ths = document.querySelectorAll('#satkerTable thead th');
+    COL_DEFS.forEach(c => {
+      const th = ths[c.thIdx];
+      if (th) {
+        th.style.width = th.style.minWidth = th.style.maxWidth = colWidths[c.id] + 'px';
+      }
+    });
+    applyTdWidths();
+  }
+
+  function applyTdWidths() {
+    document.querySelectorAll('#satkerTable tbody tr').forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      COL_DEFS.forEach(c => {
+        const td = tds[c.thIdx];
+        if (td) td.style.width = td.style.minWidth = td.style.maxWidth = colWidths[c.id] + 'px';
+      });
+    });
+  }
+
+  function applyAllPanels() {
+    // Build full template string from both side + jenis widths
+    const sideW  = panelWidths['panel-side']  || 200;
+    const jenisW = panelWidths['panel-jenis'] || 220;
+    document.getElementById('bottom-section').style.gridTemplateColumns = `${sideW}px 1fr ${jenisW}px`;
+    // Height
+    const h = panelWidths['layout-height'] || 0;
+    const bs = document.getElementById('bottom-section');
+    if (h > 0) { bs.style.height = h + 'px'; bs.style.flex = '0 0 auto'; }
+    else        { bs.style.height = ''; bs.style.flex = '1'; }
+  }
+
+  // Build one slider row
+  function buildSliderRow(id, label, icon, val, minVal, maxVal, unit, onInputFn) {
+    const pct  = Math.round(((val - minVal) / (maxVal - minVal)) * 100);
+    const row  = document.createElement('div');
+    row.className = 'cs-col-row';
+    row.innerHTML = `
+      <div class="cs-col-label">
+        <span class="cs-col-icon">${icon}</span>
+        <span>${label}</span>
+      </div>
+      <input type="range" class="cs-col-slider" id="slider-${id}"
+        min="${minVal}" max="${maxVal}" value="${val}"
+        style="--pct:${pct}%"
+        oninput="${onInputFn}('${id}', this)">
+      <div class="cs-col-value" id="val-${id}">${val}${unit}</div>
+    `;
+    return row;
+  }
+
+  function openColSettings() {
+    renderCsTab(currentCsTab);
+    document.getElementById('colsettings-overlay').classList.add('open');
+  }
+
+  function switchCsTab(tab, btn) {
+    currentCsTab = tab;
+    document.querySelectorAll('.cs-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderCsTab(tab);
+  }
+
+  function renderCsTab(tab) {
+    const body = document.getElementById('colsettings-body');
+    body.innerHTML = '';
+
+    if (tab === 'tabel') {
+      const title = document.createElement('div');
+      title.className = 'cs-section-title';
+      title.textContent = 'Lebar Kolom Tabel Satuan Kerja';
+      body.appendChild(title);
+      COL_DEFS.forEach(c => {
+        body.appendChild(buildSliderRow(c.id, c.label, c.icon, colWidths[c.id], c.minPx, c.maxPx, 'px', 'onColSlider'));
+      });
+    } else {
+      const title = document.createElement('div');
+      title.className = 'cs-section-title';
+      title.textContent = 'Ukuran Panel';
+      body.appendChild(title);
+      PANEL_DEFS.forEach(p => {
+        const label = p.id === 'layout-height'
+          ? (panelWidths[p.id] > 0 ? p.label : p.label + ' (otomatis)')
+          : p.label;
+        body.appendChild(buildSliderRow(p.id, label, p.icon, panelWidths[p.id], p.minVal, p.maxVal, p.unit, 'onPanelSlider'));
+      });
+      // Info note
+      const note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:var(--slate-400);padding:4px 2px 8px;line-height:1.5;';
+      note.textContent = 'Tinggi Area Bawah: geser ke kiri untuk menggunakan tinggi otomatis.';
+      body.appendChild(note);
+    }
+  }
+
+  function onColSlider(id, el) {
+    const val = parseInt(el.value);
+    colWidths[id] = val;
+    updateSliderDisplay(id, val, 'px', el);
+    applyColWidths();
+  }
+
+  function onPanelSlider(id, el) {
+    const val    = parseInt(el.value);
+    const p      = PANEL_DEFS.find(x => x.id === id);
+    panelWidths[id] = val;
+    // Special label for height at minimum = auto
+    let displayVal = val + p.unit;
+    if (id === 'layout-height' && val <= p.minVal) { displayVal = 'Auto'; panelWidths[id] = 0; }
+    document.getElementById('val-' + id).textContent = displayVal;
+    const pct = Math.round(((val - p.minVal) / (p.maxVal - p.minVal)) * 100);
+    el.style.setProperty('--pct', pct + '%');
+    applyAllPanels();
+  }
+
+  function updateSliderDisplay(id, val, unit, el) {
+    document.getElementById('val-' + id).textContent = val + unit;
+    const c   = COL_DEFS.find(x => x.id === id) || PANEL_DEFS.find(x => x.id === id);
+    const min = c.minPx || c.minVal, max = c.maxPx || c.maxVal;
+    const pct = Math.round(((val - min) / (max - min)) * 100);
+    el.style.setProperty('--pct', pct + '%');
+  }
+
+  function closeColSettings() {
+    document.getElementById('colsettings-overlay').classList.remove('open');
+  }
+
+  function handleColSettingsOutside(e) {
+    if (e.target === document.getElementById('colsettings-overlay')) closeColSettings();
+  }
+
+  function resetColWidths() {
+    if (currentCsTab === 'tabel') {
+      COL_DEFS.forEach(c => {
+        colWidths[c.id] = c.defaultPx;
+        const sl = document.getElementById('slider-' + c.id);
+        const vl = document.getElementById('val-'    + c.id);
+        if (sl) { sl.value = c.defaultPx; const pct = Math.round(((c.defaultPx - c.minPx) / (c.maxPx - c.minPx)) * 100); sl.style.setProperty('--pct', pct + '%'); }
+        if (vl) vl.textContent = c.defaultPx + 'px';
+      });
+      applyColWidths();
+    } else {
+      PANEL_DEFS.forEach(p => {
+        panelWidths[p.id] = p.defaultVal;
+        const sl = document.getElementById('slider-' + p.id);
+        const vl = document.getElementById('val-'    + p.id);
+        if (sl) { sl.value = p.defaultVal; const pct = Math.round(((p.defaultVal - p.minVal) / (p.maxVal - p.minVal)) * 100); sl.style.setProperty('--pct', pct + '%'); }
+        if (vl) vl.textContent = (p.id === 'layout-height' && p.defaultVal === 0 ? 'Auto' : p.defaultVal + p.unit);
+      });
+      applyAllPanels();
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('colsettings-overlay').classList.remove('open');
   });
 
   let toastTimer;
