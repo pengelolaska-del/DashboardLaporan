@@ -1442,15 +1442,69 @@
   ];
 
   // ── INIT ────────────────────────────────────────────────
+  // Default: bulan sekarang, tapi akan auto-fallback ke bulan terbaru yang ada data
   let currentBulan = BULAN_LIST[new Date().getMonth()];
+  let _autoDetecting = false; // flag agar auto-detect tidak loop
 
   window.addEventListener('DOMContentLoaded', () => {
     buildBulanDropdown(currentBulan);
     buildBulanPicker();
     showLoader(false);
-    // Auto-load data saat halaman pertama kali dibuka
-    refreshData();
+    // Auto-detect bulan terbaru yang ada data, mulai dari bulan sekarang mundur
+    autoDetectBulan();
   });
+
+  // Coba bulan dari sekarang mundur sampai ketemu data valid
+  async function autoDetectBulan() {
+    _autoDetecting = true;
+    const nowIdx = new Date().getMonth(); // 0-based
+    // Coba: bulan sekarang, bulan lalu, 2 bulan lalu, dst — max 6 bulan ke belakang
+    const candidates = [];
+    for (let i = 0; i <= 5; i++) {
+      const idx = ((nowIdx - i) + 12) % 12;
+      candidates.push(BULAN_LIST[idx]);
+    }
+    for (const b of candidates) {
+      const ok = await probeBulan(b);
+      if (ok) {
+        currentBulan = b;
+        buildBulanDropdown(currentBulan);
+        _autoDetecting = false;
+        refreshData();
+        return;
+      }
+    }
+    // Tidak ada satu pun yang berhasil — tetap pakai bulan sekarang dan tampilkan error normal
+    _autoDetecting = false;
+    refreshData();
+  }
+
+  // Probe: kirim request ke GAS, kembalikan true jika ada data, false jika error/kosong
+  async function probeBulan(bulan) {
+    try {
+      const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
+      // Timeout singkat 12 detik untuk probe
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 12000);
+      let json;
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(tid);
+        if (!res.ok) return false;
+        json = await res.json();
+      } catch {
+        clearTimeout(tid);
+        // Fallback JSONP
+        try { json = await fetchViaJsonp(url); } catch { return false; }
+      }
+      if (json.error) return false;
+      const rows = (json.rekapSatker || []);
+      const pkgs = (json.allPackages  || []);
+      return rows.length > 0 || pkgs.length > 0;
+    } catch {
+      return false;
+    }
+  }
 
   // ── CUSTOM BULAN DROPDOWN (DASHBOARD) ───────────────────
   function buildBulanDropdown(selectedBulan) {
@@ -1627,7 +1681,8 @@
     } catch (e) {
       setLoaderProgress(100, '');
       setTimeout(() => showLoader(false), 200);
-      showError(e.message);
+      // Saat auto-detect, jangan tampilkan error overlay (akan retry bulan lain)
+      if (!_autoDetecting) showError(e.message);
     }
   }
 
