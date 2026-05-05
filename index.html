@@ -985,6 +985,7 @@
 
     /* ── JENIS PENGADAAN PANEL KANAN ────────────────── */
     #jenis-panel-wrap .panel { flex: 1; }
+    #jenis-panel-wrap { gap: 10px; }
     .jenis-mini-row {
       display: flex; align-items: center;
       padding: 7px 8px; border-bottom: 1px solid var(--slate-100);
@@ -1000,6 +1001,83 @@
     .jenis-mini-row.active .jm-name { color: var(--blue); }
     .jenis-mini-row .jm-sub  { font-size: 10px; color: var(--slate-400); margin-top: 1px; }
     .jenis-mini-row .jm-pct  { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px; flex-shrink: 0; }
+
+    /* ── RINGKASAN TOTAL TERFILTER ──────────────────────── */
+    #summary-totals-panel {
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #0f172a 0%, #1e3a8a 100%);
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(37,99,235,.25);
+    }
+    #summary-totals-panel .panel-title {
+      border-bottom-color: rgba(255,255,255,.1);
+    }
+    #summary-totals-panel .panel-title .panel-title-text {
+      color: rgba(255,255,255,.65);
+    }
+    #summary-satker-count {
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,.3) !important;
+    }
+    #summary-totals-body {
+      display: flex; flex-direction: column; gap: 0;
+      padding: 2px 0 0;
+    }
+    .summary-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 2px;
+      gap: 6px;
+    }
+    .summary-row-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,.42);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .summary-row-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,.88);
+      text-align: right; word-break: break-all;
+    }
+    .summary-divider {
+      height: 1px; background: rgba(255,255,255,.08);
+      margin: 4px 0;
+    }
+    .summary-efis-row { margin-top: 2px; }
+    .summary-efis-row .summary-row-value {
+      font-size: 13px;
+    }
+    .summary-efis-pos { color: #34d399 !important; }
+    .summary-efis-neg { color: #f87171 !important; }
+    .summary-efis-zero { color: rgba(255,255,255,.25) !important; }
+    .summary-pct-bar-wrap {
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .summary-pct-label {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 5px;
+    }
+    .summary-pct-label > span:first-child {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,.38);
+    }
+    .summary-pct-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 800;
+      color: rgba(255,255,255,.82);
+    }
+    .summary-pct-track {
+      height: 6px; border-radius: 999px;
+      background: rgba(255,255,255,.1); overflow: hidden;
+    }
+    .summary-pct-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #34d399, #059669);
+      transition: width .5s cubic-bezier(.34,1.2,.64,1);
+      min-width: 2px;
+    }
 
     /* ── RESPONSIVE ──────────────────────────────────── */
     /* Tablet landscape (≤1280px): kurangi kolom jenis */
@@ -1206,8 +1284,8 @@
       border-radius: 7px; white-space: nowrap;
       min-width: 60px;
     }
-    #colsettings-footer {
-      padding: 12px 20px;
+    #btn-numfmt { min-width: 88px; justify-content: center; }
+    #btn-numfmt.active { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
       border-top: 1px solid var(--slate-100);
       display: flex; gap: 8px; justify-content: flex-end;
       flex-shrink: 0;
@@ -1321,6 +1399,7 @@
       <div id="bulan-dropdown"></div>
     </div>
     <button class="btn btn-ghost" onclick="window.print()">🖨 Cetak</button>
+    <button class="btn btn-ghost" id="btn-numfmt" onclick="cycleNumFmt()" title="Ubah format angka Rupiah">🔢 <span id="numfmt-label">Singkat</span></button>
     <button class="btn btn-ghost" id="btn-col-settings" onclick="openColSettings()" title="Atur lebar kolom tabel">⚙ Kolom</button>
     <button class="btn btn-ghost" id="btn-debug" onclick="runDebug()" title="Cek mapping kolom sheet">🔍 Debug Kolom</button>
     <button class="btn btn-primary" onclick="refreshData()">↺ Segarkan</button>
@@ -1445,6 +1524,38 @@
         </div>
         <div class="panel-body" id="panel-jenis">
           <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
+        </div>
+      </div>
+
+      <!-- RINGKASAN TOTAL DARI FILTER -->
+      <div class="panel" id="summary-totals-panel" style="flex-shrink:0;">
+        <div class="panel-title">
+          <span class="panel-title-text">Ringkasan Terfilter</span>
+          <span id="summary-satker-count" style="font-size:10px;font-weight:700;color:var(--slate-400);">0 satker</span>
+        </div>
+        <div id="summary-totals-body">
+          <div class="summary-row">
+            <div class="summary-row-label">💰 Pagu (terealisasi)</div>
+            <div class="summary-row-value" id="sum-pagu">Rp 0</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-row-label">✅ Realisasi</div>
+            <div class="summary-row-value" id="sum-real">Rp 0</div>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row summary-efis-row">
+            <div class="summary-row-label">💎 Efisiensi</div>
+            <div class="summary-row-value summary-efis-value" id="sum-efis">—</div>
+          </div>
+          <div class="summary-pct-bar-wrap">
+            <div class="summary-pct-label">
+              <span>Serapan</span>
+              <span id="sum-pct-txt" class="summary-pct-num">0%</span>
+            </div>
+            <div class="summary-pct-track">
+              <div class="summary-pct-fill" id="sum-pct-fill" style="width:0%"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2816,6 +2927,8 @@
     const filtered = data.filter(s => s.totalPaket > 0);
     if (!filtered.length) {
       tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
+      _lastFilteredData = [];
+      updateSummaryTotals([]);
       return;
     }
 
@@ -2871,7 +2984,50 @@
 
     // Terapkan lebar kolom kustom setelah render
     setTimeout(applyColWidths, 0);
+
+    // Update ringkasan total di panel kanan
+    _lastFilteredData = filtered;
+    updateSummaryTotals(filtered);
   }
+  // ── RINGKASAN TOTAL TERFILTER ────────────────────────────
+  function updateSummaryTotals(filteredData) {
+    let totalPaguReal = 0, totalReal = 0;
+    let totalPkt = 0, totalPktReal = 0;
+
+    filteredData.filter(s => s.totalPaket > 0).forEach(s => {
+      const pkgs  = pkgBySatker[s.namaSatker] || [];
+      // Hanya paket yang ada realisasinya
+      const pkgsR = pkgs.filter(p => (p.realisasi || 0) > 0);
+      const paguR = pkgsR.reduce((a, p) => a + (p.pagu      || 0), 0);
+      const realR = pkgsR.reduce((a, p) => a + (p.realisasi || 0), 0);
+
+      totalPaguReal += paguR;
+      totalReal     += realR;
+      totalPkt      += pkgs.length;
+      totalPktReal  += pkgsR.length;
+    });
+
+    const totalEfis = totalPaguReal - totalReal;
+    const pct = totalPaguReal > 0 ? Math.min((totalReal / totalPaguReal * 100), 100) : 0;
+
+    // Update DOM
+    const n = filteredData.filter(s => s.totalPaket > 0).length;
+    document.getElementById('summary-satker-count').textContent = n + ' satker · ' + totalPktReal + ' / ' + totalPkt + ' paket';
+    document.getElementById('sum-pagu').textContent = fmt(totalPaguReal);
+    document.getElementById('sum-real').textContent = fmt(totalReal);
+
+    const efisEl = document.getElementById('sum-efis');
+    efisEl.className = 'summary-row-value ' + (
+      totalReal === 0 ? 'summary-efis-zero' :
+      totalEfis >= 0  ? 'summary-efis-pos'  : 'summary-efis-neg'
+    );
+    efisEl.textContent = totalReal === 0 ? '—' :
+      (totalEfis >= 0 ? '' : '▲ ') + fmt(Math.abs(totalEfis));
+
+    document.getElementById('sum-pct-txt').textContent  = pct.toFixed(1) + '%';
+    document.getElementById('sum-pct-fill').style.width = pct.toFixed(1) + '%';
+  }
+
   // ── FILTER ───────────────────────────────────────────────
   function filterTable() {
     const q = document.getElementById('tbl-search').value.toLowerCase();
@@ -3059,10 +3215,46 @@
   });
 
   // ── UTILS ────────────────────────────────────────────────
+  // ── FORMAT ANGKA ─────────────────────────────────────────
+  // Mode: 'short' = Rp 1.23 M / 'medium' = Rp 1.234.567 / 'full' = Rp 1.234.567.890
+  const NUM_FMT_MODES = [
+    { key: 'short',  label: 'Singkat',  desc: 'M / Jt' },
+    { key: 'medium', label: 'Jutaan',   desc: '0,00 Jt' },
+    { key: 'full',   label: 'Penuh',    desc: 'Rp 0.000' },
+  ];
+  let numFmtIdx = 0; // default: short
+
+  function cycleNumFmt() {
+    numFmtIdx = (numFmtIdx + 1) % NUM_FMT_MODES.length;
+    const mode = NUM_FMT_MODES[numFmtIdx];
+    document.getElementById('numfmt-label').textContent = mode.label;
+    // Aktif highlight jika bukan mode default
+    document.getElementById('btn-numfmt').classList.toggle('active', numFmtIdx !== 0);
+    // Re-render semua komponen yang pakai fmt()
+    if (allData.length || allPkg.length) {
+      buildCards(allData, allPkg);
+      buildSidePanel(allPkg);
+      buildJenisPanel(allPkg);
+      filterTable(); // re-renders table + summary
+    }
+  }
+
+  let _lastFilteredData = [];
+
   function fmt(n) {
     if (!n || isNaN(n)) return 'Rp 0';
-    if (n >= 1e9)  return 'Rp ' + (n / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
-    if (n >= 1e6)  return 'Rp ' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
+    const mode = NUM_FMT_MODES[numFmtIdx].key;
+    if (mode === 'short') {
+      if (n >= 1e9)  return 'Rp ' + (n / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
+      if (n >= 1e6)  return 'Rp ' + (n / 1e6).toFixed(1).replace(/\.0$/, '')  + ' Jt';
+      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+    if (mode === 'medium') {
+      if (n >= 1e9)  return 'Rp ' + (n / 1e6).toFixed(2).replace(/\.00$/, '') + ' Jt';
+      if (n >= 1e6)  return 'Rp ' + (n / 1e6).toFixed(3).replace(/\.?0+$/, '') + ' Jt';
+      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+    // full
     return 'Rp ' + Math.round(n).toLocaleString('id-ID');
   }
 
