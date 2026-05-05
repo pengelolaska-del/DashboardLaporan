@@ -1682,11 +1682,13 @@
     const totReal = satkers.reduce((a, s) => a + (s.nilaiReal || 0), 0);
     const totPkgReal = pkgs.filter(p => p.realisasi > 0).length;
 
-    // Efisiensi: hanya dari paket yang ada join realisasi (realisasi > 0)
-    const totEfis = pkgs
-      .filter(p => p.realisasi > 0)
-      .reduce((a, p) => a + (p.pagu - p.realisasi), 0);
-    const pctEfis = totRUP > 0 ? (totEfis / totRUP * 100) : 0;
+    // Efisiensi: hanya dari paket yang ada nilai realisasi (join via kode RUP berhasil)
+    const pkgsReal   = pkgs.filter(p => p.realisasi > 0);
+    const paguReal   = pkgsReal.reduce((a, p) => a + p.pagu, 0);   // pagu dari paket yg sudah realisasi
+    const totEfis    = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    // Persen efisiensi dari pagu paket yg sudah direalisasikan (bukan total pagu)
+    const pctEfis    = paguReal > 0 ? (totEfis / paguReal * 100) : 0;
+    const pctSerapan = totRUP  > 0 ? (totReal  / totRUP  * 100) : 0;
 
     setText('c-rup',          fmt(totRUP));
     setText('c-rup-sub',      totPaket + ' Paket');
@@ -1697,9 +1699,9 @@
     setText('c-swak',         fmt(swak.v));
     setText('c-swak-sub',     swak.c + ' Paket');
     setText('c-real',         fmt(totReal));
-    setText('c-real-sub',     totPkgReal + ' Paket Realisasi');
+    setText('c-real-sub',     totPkgReal + ' Paket · ' + pctSerapan.toFixed(1) + '% Serapan');
     setText('c-efis',         fmt(totEfis));
-    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Pagu');
+    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Pagu Terealisasi');
   }
 
   // ── SIDE PANEL ───────────────────────────────────────────
