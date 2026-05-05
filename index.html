@@ -1117,7 +1117,6 @@
         <div id="satker-list"></div>
       </div>
     </div>
-    <select id="selBulan" style="display:none" onchange="refreshData()"></select>
     <!-- Custom bulan dropdown -->
     <div id="bulan-dropdown-wrap">
       <div id="bulan-btn" onclick="toggleBulanDropdown()">
@@ -1384,7 +1383,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxHi-Z01sZRvfZDAGSoYl6mKzsyowPT9s35-DPswWqhEtbrnq_hmggIjRTGXA7hZ2W_7g/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby9jWZ1fTjL6XNLT8gtTgCCr2bLlW4DYnTTZnLkoaQ8PzzYMzX-A3e98OwnhqpmLdlIUA/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1412,22 +1411,11 @@
   ];
 
   // ── INIT ────────────────────────────────────────────────
+  let currentBulan = BULAN_LIST[new Date().getMonth()];
+
   window.addEventListener('DOMContentLoaded', () => {
-    const sel = document.getElementById('selBulan');
-    const cur = new Date().getMonth(); // 0-indexed
-
-    // Populate hidden select (kept for compatibility)
-    BULAN_LIST.forEach((b, i) => {
-      const o = document.createElement('option');
-      o.value = b; o.textContent = b;
-      if (i === cur) o.selected = true;
-      sel.appendChild(o);
-    });
-
-    // Build custom bulan dropdown
-    buildBulanDropdown(BULAN_LIST[cur]);
-
-    buildBulanPicker(); // comparison page picker
+    buildBulanDropdown(currentBulan);
+    buildBulanPicker();
     showLoader(false);
   });
 
@@ -1453,19 +1441,13 @@
   }
 
   function selectBulan(b) {
-    // Update hidden select
-    const sel = document.getElementById('selBulan');
-    sel.value = b;
-    // Update button label
+    currentBulan = b;
     document.getElementById('bulan-btn-label').textContent = b;
-    // Update dropdown highlight
-    document.querySelectorAll('.bulan-option').forEach(el => {
+    document.querySelectorAll('#bulan-dropdown .bulan-option').forEach(el => {
       el.classList.toggle('selected', el.textContent.trim().endsWith(b));
     });
-    // Close dropdown
     document.getElementById('bulan-dropdown').classList.remove('open');
     document.getElementById('bulan-btn').classList.remove('open');
-    // Load data
     refreshData();
   }
 
@@ -1484,7 +1466,7 @@
 
   // ── FETCH ────────────────────────────────────────────────
   async function refreshData() {
-    const bulan = document.getElementById('selBulan').value;
+    const bulan = currentBulan;
 
     // Reset filter state on new data load
     activeFilterMetode = null;
@@ -1863,14 +1845,6 @@
     { bar: '#d97706', pagu: '#fcd34d', label: '#92400e' },
     { bar: '#dc2626', pagu: '#fca5a5', label: '#991b1b' },
     { bar: '#0891b2', pagu: '#67e8f9', label: '#164e63' },
-  ];
-
-  // Jenis pengadaan — cocokkan ke field cara (row[2]) di data
-  const JENIS_DEF = [
-    { key: 'Barang',              icon: '📦', color: '#2563eb', bg: '#eff6ff' },
-    { key: 'Jasa Konsultansi',    icon: '📝', color: '#7c3aed', bg: '#f5f3ff' },
-    { key: 'Jasa Lainnya',        icon: '🔧', color: '#0891b2', bg: '#ecfeff' },
-    { key: 'Pekerjaan Konstruksi',icon: '🏗',  color: '#d97706', bg: '#fffbeb' },
   ];
 
   // E-purchasing — metode yang termasuk e-purchasing
