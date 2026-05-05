@@ -1846,42 +1846,51 @@
   }
 
   function buildSidePanel(pkgs) {
-    // ── Metode: hitung breakdown status per metode ────────
+    // ── METODE: dari allPkg (RUP_bulan) + breakdown status ───
+    // Metode = field p.metode berasal dari kolom D sheet RUP_<bulan>
+    // Status breakdown dihitung dari p.status yang berasal dari
+    // join RUP × Realisasi via Kode RUP (kolom L sheet Realisasi_<bulan>)
     const metodeMap = {};
     pkgs.forEach(p => {
       const m = normMetode(p.metode);
-      if (!metodeMap[m]) metodeMap[m] = { count: 0, nilai: 0, selesai: 0, berjalan: 0, belum: 0 };
+      if (!metodeMap[m]) metodeMap[m] = {
+        count: 0, pagu: 0,
+        selesai: 0, berjalan: 0, belum: 0
+      };
       metodeMap[m].count++;
-      metodeMap[m].nilai += p.pagu;
+      metodeMap[m].pagu += (p.pagu || 0);
       const st = (p.status || '').toLowerCase();
-      if      (/selesai/.test(st))                  metodeMap[m].selesai++;
-      else if (/berjalan|proses|sedang/.test(st))   metodeMap[m].berjalan++;
-      else                                           metodeMap[m].belum++;
+      if      (/selesai/.test(st))                metodeMap[m].selesai++;
+      else if (/berjalan|proses|sedang/.test(st)) metodeMap[m].berjalan++;
+      else                                         metodeMap[m].belum++;
     });
-    const metodes = Object.entries(metodeMap).sort((a, b) => b[1].nilai - a[1].nilai);
+    const metodes = Object.entries(metodeMap)
+      .sort((a, b) => b[1].pagu - a[1].pagu);
 
     const pmEl = document.getElementById('panel-metode');
     pmEl.innerHTML = '';
     metodes.forEach(([name, d]) => {
       const row = document.createElement('div');
       row.className = 'mini-row' + (activeFilterMetode === name ? ' active' : '');
-      row.title = `Klik untuk filter: ${name}`;
-      const selesaiBadge  = d.selesai  > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#d1fae5;color:#065f46">${d.selesai}✓</span>` : '';
-      const berjalanBadge = d.berjalan > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#dbeafe;color:#1e40af">${d.berjalan}▶</span>` : '';
-      const belumBadge    = d.belum    > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#fef3c7;color:#92400e">${d.belum}○</span>` : '';
+      row.title = `Klik untuk filter: ${name} (${d.count} paket)`;
+      const sb = d.selesai  > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#d1fae5;color:#065f46;white-space:nowrap">${d.selesai}✓</span>` : '';
+      const bb = d.berjalan > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#dbeafe;color:#1e40af;white-space:nowrap">${d.berjalan}▶</span>` : '';
+      const pb = d.belum    > 0 ? `<span style="font-size:9px;font-weight:700;padding:1px 4px;border-radius:4px;background:#fef3c7;color:#92400e;white-space:nowrap">${d.belum}○</span>` : '';
       row.innerHTML = `
         <span class="name">${name}</span>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">
           <span class="chip chip-default" style="font-size:9px">${d.count} pkt</span>
-          <div style="display:flex;gap:2px">${selesaiBadge}${berjalanBadge}${belumBadge}</div>
-        </div>
-      `;
+          <div style="display:flex;gap:2px">${sb}${bb}${pb}</div>
+        </div>`;
       row.addEventListener('click', () => toggleFilterMetode(name));
       pmEl.appendChild(row);
     });
-    if (!metodes.length) pmEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+    if (!metodes.length)
+      pmEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
 
-    // ── Status: jika metode aktif → filter, jika tidak → semua ─
+    // ── STATUS: dari allPkg (join RUP × Realisasi) ───────────
+    // Status paket berasal dari kolom L sheet Realisasi_<bulan>
+    // (sudah dinormalisasi di code.gs: Selesai / Sedang Berjalan / Belum Realisasi)
     const pkgsForStatus = activeFilterMetode
       ? pkgs.filter(p => normMetode(p.metode) === activeFilterMetode)
       : pkgs;
@@ -1889,11 +1898,12 @@
     const statusMap = {};
     pkgsForStatus.forEach(p => {
       const s = p.status || 'Belum Realisasi';
-      if (!statusMap[s]) statusMap[s] = { count: 0, nilai: 0 };
+      if (!statusMap[s]) statusMap[s] = { count: 0, real: 0 };
       statusMap[s].count++;
-      statusMap[s].nilai += p.realisasi;
+      statusMap[s].real += (p.realisasi || 0);
     });
-    const statuses = Object.entries(statusMap).sort((a, b) => b[1].count - a[1].count);
+    const statuses = Object.entries(statusMap)
+      .sort((a, b) => b[1].count - a[1].count);
 
     const psEl = document.getElementById('panel-status');
     psEl.innerHTML = '';
@@ -1903,17 +1913,21 @@
                       : /belum/i.test(name) ? 'chip-belum' : 'chip-default';
       const row = document.createElement('div');
       row.className = 'mini-row' + (activeFilterStatus === name ? ' active' : '');
-      row.title = `Klik untuk filter: ${name}`;
+      row.title = `Klik untuk filter status: ${name}`;
+      // Tampilkan jumlah paket dan total realisasi
+      const realStr = d.real > 0 ? `<span style="font-size:9px;color:var(--slate-400);margin-top:1px">${fmt(d.real)}</span>` : '';
       row.innerHTML = `
-        <span class="name">${name}</span>
-        <span class="chip ${chipClass}">${d.count}</span>
-      `;
+        <div style="flex:1;min-width:0">
+          <div class="name">${name}</div>
+          ${realStr}
+        </div>
+        <span class="chip ${chipClass}">${d.count}</span>`;
       row.addEventListener('click', () => toggleFilterStatus(name));
       psEl.appendChild(row);
     });
-    if (!statuses.length) psEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+    if (!statuses.length)
+      psEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
   }
-
   // ── FILTER TOGGLE METODE (UTAMA) ────────────────────────
   function toggleFilterMetode(name) {
     if (activeFilterMetode === name) {
@@ -2619,7 +2633,7 @@
   }
 
   // ── MAIN TABLE ───────────────────────────────────────────
-  // Buat lookup cepat: satker → array paket, dihitung sekali saat data masuk
+  // Index cepat: satker → array paket (dibangun ulang tiap data baru)
   let pkgBySatker = {};
   function rebuildPkgIndex() {
     pkgBySatker = {};
@@ -2635,30 +2649,31 @@
     document.getElementById('toolbar-count').textContent = `${data.length} Satker`;
 
     const filtered = data.filter(s => s.totalPaket > 0);
-
     if (!filtered.length) {
       tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
       return;
     }
 
     filtered.forEach((s, idx) => {
-      // ── Hitung langsung dari allPkg ────────────────────
-      const pkgs      = pkgBySatker[s.namaSatker] || [];
-      const nilaiReal = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
-      const nilaiRUP  = s.nilaiRUP > 0 ? s.nilaiRUP
-                      : pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
-      const dilaks    = pkgs.filter(p => p.realisasi > 0).length;
-      const totalPkt  = pkgs.length || s.totalPaket;
-
-      // Efisiensi hanya dari paket yang sudah terealisasi
-      const pkgsReal  = pkgs.filter(p => p.realisasi > 0);
-      const efisiensi = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+      // ── Hitung dari allPkg (sumber kebenaran) ─────────
+      const pkgs     = pkgBySatker[s.namaSatker] || [];
+      // Pagu: dari RUP (s.nilaiRUP sudah benar dari server)
+      const nilaiRUP = s.nilaiRUP > 0 ? s.nilaiRUP
+                     : pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
+      // Realisasi: sum dari allPkg (lebih akurat dari join kode RUP)
+      const nilaiReal  = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
+      const totalPkt   = pkgs.length || s.totalPaket;
+      const dilaks     = pkgs.filter(p => p.realisasi > 0).length;
+      // Efisiensi: hanya dari paket yang sudah terealisasi
+      const efisiensi  = pkgs
+        .filter(p => p.realisasi > 0)
+        .reduce((a, p) => a + (p.pagu - p.realisasi), 0);
 
       const pct        = nilaiRUP > 0 ? (nilaiReal / nilaiRUP * 100) : 0;
       const pctStr     = pct.toFixed(1) + '%';
       const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
       const efisClass  = nilaiReal === 0 ? 'efisiensi-zero'
-                       : efisiensi >= 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+                       : efisiensi >= 0  ? 'efisiensi-pos' : 'efisiensi-neg';
       const efisStr    = nilaiReal === 0 ? '—' : fmt(efisiensi);
 
       const tr = document.createElement('tr');
@@ -2686,7 +2701,6 @@
       tbody.appendChild(tr);
     });
   }
-
   // ── FILTER ───────────────────────────────────────────────
   function filterTable() {
     const q = document.getElementById('tbl-search').value.toLowerCase();
