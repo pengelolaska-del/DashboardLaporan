@@ -1623,7 +1623,7 @@
 
     statuses.forEach(([name, d]) => {
       const chipClass = /selesai/i.test(name) ? 'chip-selesai'
-                      : /berjalan|proses/i.test(name) ? 'chip-berjalan'
+                      : /berjalan|proses|sedang/i.test(name) ? 'chip-berjalan'
                       : /belum/i.test(name) ? 'chip-belum' : 'chip-default';
       const row = document.createElement('div');
       row.className = 'mini-row' + (activeFilterStatus === name ? ' active' : '');
@@ -1702,6 +1702,20 @@
 
   // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
+    // Utamakan field jenis dari data sheet (dikirim oleh code.gs)
+    if (pkg.jenis) {
+      const jRaw = pkg.jenis.trim();
+      // Cocokkan dengan key JENIS_DEF (case-insensitive partial match)
+      const found = JENIS_DEF.find(j =>
+        jRaw.toLowerCase().includes(j.key.toLowerCase()) ||
+        j.key.toLowerCase().includes(jRaw.toLowerCase())
+      );
+      if (found) return found.key;
+      // Jika ada nilai tapi tidak cocok, kembalikan nilai aslinya
+      // agar tetap tampil (akan masuk chip-default)
+      return jRaw;
+    }
+    // Fallback: deteksi dari nama paket (jika field jenis tidak ada)
     const nm = (pkg.nama || '').toLowerCase();
     for (let i = 0; i < JENIS_DEF.length - 1; i++) {
       if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
@@ -2481,7 +2495,7 @@
 
     pkgs.forEach(p => {
       const chipClass = /selesai/i.test(p.status) ? 'chip-selesai'
-                      : /berjalan|proses/i.test(p.status) ? 'chip-berjalan'
+                      : /berjalan|proses|sedang/i.test(p.status) ? 'chip-berjalan'
                       : /belum/i.test(p.status) ? 'chip-belum' : 'chip-default';
       const jenis    = detectJenis(p);
       const jenisDef = JENIS_DEF.find(j => j.key === jenis) || JENIS_DEF[3];
