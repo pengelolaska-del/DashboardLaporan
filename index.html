@@ -1291,58 +1291,6 @@
       flex-shrink: 0;
     }
 
-    /* ── DEBUG PANEL ──────────────────────────────────── */
-    #debug-overlay {
-      display: none; position: fixed; inset: 0; z-index: 9000;
-      background: rgba(15,23,42,.7); backdrop-filter: blur(4px);
-      align-items: center; justify-content: center; padding: 24px;
-    }
-    #debug-overlay.open { display: flex; }
-    #debug-box {
-      background: #0f172a; border-radius: 16px; width: 100%;
-      max-width: 860px; max-height: 80vh; overflow: hidden;
-      display: flex; flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    }
-    #debug-header {
-      padding: 14px 20px; display: flex; align-items: center;
-      justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    #debug-header h3 { font-size: 13px; font-weight: 700; color: #e2e8f0; }
-    #debug-header span { font-size: 11px; color: #64748b; }
-    #debug-close {
-      font-family: inherit; background: transparent; border: none;
-      color: #64748b; font-size: 18px; cursor: pointer; padding: 4px 8px;
-      border-radius: 6px; transition: background .15s;
-    }
-    #debug-close:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
-    #debug-body {
-      overflow-y: auto; padding: 16px 20px;
-      font-family: 'JetBrains Mono', monospace; font-size: 11px;
-      line-height: 1.7; color: #94a3b8; flex: 1;
-    }
-    #debug-body::-webkit-scrollbar { width: 4px; }
-    #debug-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
-    .dbg-section { margin-bottom: 20px; }
-    .dbg-section h4 { color: #38bdf8; font-size: 11px; font-weight: 700;
-      letter-spacing: .6px; text-transform: uppercase; margin-bottom: 8px;
-      padding-bottom: 4px; border-bottom: 1px solid rgba(56,189,248,.2); }
-    .dbg-table { width: 100%; border-collapse: collapse; }
-    .dbg-table th { padding: 4px 10px; background: rgba(255,255,255,.04);
-      color: #64748b; font-size: 10px; font-weight: 700; text-align: left;
-      border: 1px solid rgba(255,255,255,.06); white-space: nowrap; }
-    .dbg-table td { padding: 4px 10px; border: 1px solid rgba(255,255,255,.06);
-      color: #cbd5e1; font-size: 10px; white-space: nowrap; max-width: 200px;
-      overflow: hidden; text-overflow: ellipsis; }
-    .dbg-table td.idx  { color: #fbbf24; font-weight: 700; }
-    .dbg-table td.key  { color: #34d399; font-weight: 700; background: rgba(52,211,153,.06); }
-    .dbg-table td.pagu { color: #f472b6; font-weight: 700; background: rgba(244,114,182,.06); }
-    .dbg-table td.real { color: #60a5fa; font-weight: 700; background: rgba(96,165,250,.06); }
-    .dbg-status { padding: 10px 14px; border-radius: 8px; margin-bottom: 12px;
-      font-size: 11px; font-weight: 600; }
-    .dbg-status.ok  { background: rgba(52,211,153,.1); color: #34d399; border: 1px solid rgba(52,211,153,.2); }
-    .dbg-status.err { background: rgba(239,68,68,.1); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
-    .dbg-status.warn{ background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.2); }
   </style>
 </head>
 <body>
@@ -1401,7 +1349,6 @@
     <button class="btn btn-ghost" onclick="window.print()">🖨 Cetak</button>
     <button class="btn btn-ghost" id="btn-numfmt" onclick="cycleNumFmt()" title="Ubah format angka Rupiah">🔢 <span id="numfmt-label">Singkat</span></button>
     <button class="btn btn-ghost" id="btn-col-settings" onclick="openColSettings()" title="Atur lebar kolom tabel">⚙ Kolom</button>
-    <button class="btn btn-ghost" id="btn-debug" onclick="runDebug()" title="Cek mapping kolom sheet">🔍 Debug Kolom</button>
     <button class="btn btn-primary" onclick="refreshData()">↺ Segarkan</button>
   </div>
 </div>
@@ -1720,22 +1667,6 @@
     <div id="colsettings-footer">
       <button class="btn btn-ghost" onclick="resetColWidths()">↺ Reset Default</button>
       <button class="btn btn-primary" onclick="closeColSettings()">✓ Tutup</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── DEBUG OVERLAY ─────────────────────────────────────── -->
-<div id="debug-overlay">
-  <div id="debug-box">
-    <div id="debug-header">
-      <div>
-        <h3>🔍 Debug Mapping Kolom Sheet</h3>
-        <span id="debug-bulan-label">—</span>
-      </div>
-      <button id="debug-close" onclick="closeDebug()">✕</button>
-    </div>
-    <div id="debug-body">
-      <div style="color:#64748b;text-align:center;padding:40px">Memuat…</div>
     </div>
   </div>
 </div>
@@ -3262,129 +3193,6 @@
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   }
-
-  // ── DEBUG KOLOM ──────────────────────────────────────────
-  async function runDebug() {
-    const overlay = document.getElementById('debug-overlay');
-    const body    = document.getElementById('debug-body');
-    document.getElementById('debug-bulan-label').textContent = 'Bulan: ' + currentBulan;
-    body.innerHTML = '<div style="color:#64748b;text-align:center;padding:40px">⏳ Mengambil data header dari GAS…</div>';
-    overlay.classList.add('open');
-
-    try {
-      const url = `${GAS_URL}?bulan=${encodeURIComponent(currentBulan)}&debug=1&t=${Date.now()}`;
-      let json;
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        json = await res.json();
-      } catch {
-        json = await fetchViaJsonp(url);
-      }
-
-      if (json.error) throw new Error(json.error);
-
-      const rupHdr  = json.rup_headers  || [];
-      const rupRow  = json.rup_row2     || [];
-      const realHdr = json.real_headers || [];
-      const realRow = json.real_row2    || [];
-
-      // Cek kolom kritis
-      const rupPaguIdx  = 9;   // J — yang kita pakai
-      const rupKodeIdx  = 6;   // G
-      const realKodeIdx = 2;   // C
-      const realNilaiIdx= 12;  // M = Total Nilai (Rp)
-      const realStatIdx = 11;  // L = Status Paket
-
-      function cellVal(arr, idx) {
-        const v = arr[idx];
-        if (v === undefined || v === null || v === '') return '<em style="color:#475569">kosong</em>';
-        if (typeof v === 'number') return v.toLocaleString('id-ID');
-        return String(v).substring(0, 60);
-      }
-
-      function makeTable(headers, sampleRow, highlights) {
-        let rows = '';
-        headers.forEach((h, i) => {
-          const letter = String.fromCharCode(65 + i); // A, B, C...
-          const cls    = highlights[i] || '';
-          rows += `<tr>
-            <td class="idx">${i}</td>
-            <td class="idx">${letter}</td>
-            <td class="${cls}">${h || '<em style="color:#475569">—</em>'}</td>
-            <td class="${cls}">${cellVal(sampleRow, i)}</td>
-          </tr>`;
-        });
-        return `<table class="dbg-table">
-          <thead><tr><th>Index</th><th>Kolom</th><th>Header</th><th>Nilai Baris 2</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>`;
-      }
-
-      // Highlights untuk RUP
-      const rupHL = {};
-      rupHL[0]  = 'key';   // A = Satuan Kerja
-      rupHL[3]  = '';      // D = Metode
-      rupHL[4]  = '';      // E = Jenis
-      rupHL[5]  = '';      // F = Nama Paket
-      rupHL[6]  = 'key';   // G = Kode RUP
-      rupHL[9]  = 'pagu';  // J = Pagu ← yang harus benar
-
-      // Highlights untuk Realisasi
-      // Struktur aktual: C(2)=KodeRUP, K(10)=NamaPaket, L(11)=Status, M(12)=TotalNilai
-      const realHL = {};
-      realHL[2]  = 'key';  // C = Kode RUP
-      realHL[10] = '';     // K = Nama Paket
-      realHL[11] = '';     // L = Status Paket
-      realHL[12] = 'real'; // M = Total Nilai (Rp) ← Nilai Realisasi
-
-      // Status check
-      const rupPaguHdr  = rupHdr[rupPaguIdx]  || '';
-      const rupKodeHdr  = rupHdr[rupKodeIdx]  || '';
-      const realKodeHdr = realHdr[realKodeIdx]|| '';
-      const realNilaiHdr= realHdr[realNilaiIdx]|| '';
-
-      const isRupPaguOk  = /pagu|nilai|anggaran|harga|total/i.test(rupPaguHdr);
-      const isRupKodeOk  = /kode|rup|id/i.test(rupKodeHdr);
-      const isRealKodeOk = /kode|rup|id/i.test(realKodeHdr);
-      const isRealNilOk  = /nilai|realisasi|real|anggaran|harga/i.test(realNilaiHdr);
-
-      const statusHtml = `
-        <div class="dbg-status ${isRupPaguOk && isRupKodeOk ? 'ok' : 'err'}">
-          RUP · Kolom G(6)="${rupKodeHdr}" ${isRupKodeOk ? '✓' : '✗ (harusnya Kode RUP)'}
-          &nbsp;·&nbsp; Kolom J(9)="${rupPaguHdr}" ${isRupPaguOk ? '✓' : '✗ (harusnya Pagu/Nilai)'}
-        </div>
-        <div class="dbg-status ${isRealKodeOk && isRealNilOk ? 'ok' : 'err'}">
-          Realisasi · Kolom C(2)="${realKodeHdr}" ${isRealKodeOk ? '✓' : '✗ (harusnya Kode RUP)'}
-          &nbsp;·&nbsp; Kolom M(12)="${realNilaiHdr}" ${isRealNilOk ? '✓' : '✗ (harusnya Nilai Realisasi)'}
-        </div>
-        ${(!isRupPaguOk || !isRupKodeOk || !isRealKodeOk || !isRealNilOk)
-          ? '<div class="dbg-status warn">⚠️ Ada kolom yang indexnya tidak cocok. Lihat tabel di bawah — cari kolom yang berisi "Pagu/Nilai" dan "Kode RUP", lalu sesuaikan index di code.gs.</div>'
-          : '<div class="dbg-status ok">✅ Semua kolom kritis terdeteksi di index yang benar.</div>'
-        }`;
-
-      body.innerHTML = `
-        ${statusHtml}
-        <div class="dbg-section">
-          <h4>📋 Sheet RUP_${currentBulan} — ${rupHdr.length} kolom</h4>
-          ${rupHdr.length ? makeTable(rupHdr, rupRow, rupHL) : '<p style="color:#ef4444">Sheet tidak ditemukan</p>'}
-        </div>
-        <div class="dbg-section">
-          <h4>📊 Sheet Realisasi_${currentBulan} — ${realHdr.length} kolom</h4>
-          ${realHdr.length ? makeTable(realHdr, realRow, realHL) : '<p style="color:#ef4444">Sheet tidak ditemukan</p>'}
-        </div>`;
-
-    } catch (err) {
-      body.innerHTML = `<div class="dbg-status err">❌ Error: ${err.message}</div>`;
-    }
-  }
-
-  function closeDebug() {
-    document.getElementById('debug-overlay').classList.remove('open');
-  }
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeDebug();
-  });
 
   // ── COLUMN SETTINGS ─────────────────────────────────────────
   // Definisi kolom tabel satker (main table)
