@@ -1992,26 +1992,22 @@
 
   // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
-    // 1. Utamakan field jenis yang sudah dinormalisasi dari code.gs
-    if (pkg.jenis && pkg.jenis.trim() && pkg.jenis.trim() !== '-') {
-      const jRaw = pkg.jenis.trim();
-      // Exact match dulu
-      const exact = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
-      if (exact) return exact.key;
-      // Partial match
-      const partial = JENIS_DEF.find(j =>
-        jRaw.toLowerCase().includes(j.key.toLowerCase()) ||
-        j.key.toLowerCase().includes(jRaw.toLowerCase())
-      );
-      if (partial) return partial.key;
-      return jRaw; // kembalikan nilai asli jika tidak cocok
-    }
-    // 2. Fallback: deteksi dari nama paket
-    const nm = (pkg.nama || '').toLowerCase();
-    for (let i = 0; i < JENIS_DEF.length - 1; i++) {
-      if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
-    }
-    return 'Jasa Lainnya';
+    // Selalu gunakan field jenis dari kolom I sheet Realisasi_Bulan
+    // yang sudah dinormalisasi oleh normJenis() di code.gs
+    const jRaw = (pkg.jenis || '').trim();
+    if (!jRaw || jRaw === '-') return 'Jasa Lainnya'; // data kosong → skip
+
+    // Exact match (case-insensitive)
+    const exact = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
+    if (exact) return exact.key;
+
+    // Partial match untuk variasi penulisan
+    if (/barang/i.test(jRaw))                          return 'Barang';
+    if (/konsultan/i.test(jRaw))                       return 'Jasa Konsultansi';
+    if (/konstruksi|pekerjaan konstruksi/i.test(jRaw)) return 'Pekerjaan Konstruksi';
+    if (/jasa lain/i.test(jRaw))                       return 'Jasa Lainnya';
+
+    return 'Jasa Lainnya'; // default jika tidak dikenali
   }
 
   function buildJenisPanel(pkgs) {
@@ -2020,30 +2016,39 @@
 
     const stats = {};
     JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, pagu: 0, real: 0, satkers: new Set() }; });
-    pkgs.forEach(p => {
+
+    // Hanya proses paket yang punya jenis (tidak kosong)
+    const validPkgs = pkgs.filter(p => p.jenis && p.jenis.trim() && p.jenis.trim() !== '-');
+    const totalCount = validPkgs.length; // denominator untuk % dari keseluruhan
+
+    validPkgs.forEach(p => {
       const k = detectJenis(p);
-      stats[k].count++;
-      stats[k].pagu += p.pagu;
-      stats[k].real += p.realisasi;
-      stats[k].satkers.add(p.satker);
+      // Pastikan key ada di stats (jika jenis dari sheet tidak dikenal, masuk Jasa Lainnya)
+      const key = stats[k] ? k : 'Jasa Lainnya';
+      stats[key].count++;
+      stats[key].pagu += p.pagu;
+      stats[key].real += p.realisasi;
+      stats[key].satkers.add(p.satker);
     });
 
     JENIS_DEF.forEach(j => {
       const st = stats[j.key];
-      if (!st.count) return;
-      const pct = st.pagu > 0 ? (st.real / st.pagu * 100) : 0;
-      const pctCls = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+      if (!st || !st.count) return; // abaikan jenis yang tidak ada datanya
+
+      // % = jumlah paket jenis ini / total semua paket (bukan real/pagu)
+      const pct    = totalCount > 0 ? (st.count / totalCount * 100) : 0;
+      const pctCls = pct >= 40 ? 'pct-hi' : pct >= 15 ? 'pct-mid' : 'pct-lo';
 
       const row = document.createElement('div');
       row.className = 'jenis-mini-row' + (activeFilterJenis === j.key ? ' active' : '');
-      row.title = `Klik untuk filter: ${j.key} (${st.satkers.size} satker)`;
-      row.innerHTML = `
-        <span class="jm-icon">${j.icon}</span>
-        <div class="jm-info">
-          <div class="jm-name">${j.key}</div>
-          <div class="jm-sub">${st.count} pkt · ${st.satkers.size} satker</div>
-        </div>
-        <span class="jm-pct ${pctCls}">${pct.toFixed(0)}%</span>`;
+      row.title = 'Klik untuk filter: ' + j.key + ' (' + st.satkers.size + ' satker)';
+      row.innerHTML =
+        '<span class="jm-icon">' + j.icon + '</span>' +
+        '<div class="jm-info">' +
+          '<div class="jm-name">' + j.key + '</div>' +
+          '<div class="jm-sub">' + st.count + ' pkt · ' + st.satkers.size + ' satker</div>' +
+        '</div>' +
+        '<span class="jm-pct ' + pctCls + '">' + pct.toFixed(1) + '%</span>';
       row.addEventListener('click', () => toggleFilterJenis(j.key));
       el.appendChild(row);
     });
@@ -2053,9 +2058,7 @@
 
     // Update badge
     const badge = document.getElementById('badge-jenis');
-    if (badge) {
-      badge.classList.toggle('show', !!activeFilterJenis);
-    }
+    if (badge) badge.classList.toggle('show', !!activeFilterJenis);
   }
 
   function toggleFilterJenis(key) {
@@ -2781,21 +2784,29 @@
     row.innerHTML = '';
     const stats = {};
     JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, real: 0 }; });
-    pkgs.forEach(p => { const k = detectJenis(p); stats[k].count++; stats[k].real += p.realisasi; });
 
-    // Chip "Semua"
+    // Hanya hitung paket yang punya jenis (tidak kosong)
+    pkgs.filter(p => p.jenis && p.jenis.trim() && p.jenis.trim() !== '-')
+        .forEach(p => {
+          const k   = detectJenis(p);
+          const key = stats[k] ? k : 'Jasa Lainnya';
+          stats[key].count++;
+          stats[key].real += p.realisasi;
+        });
+
+    // Chip "Semua" — tampilkan semua paket
     const allChip = document.createElement('div');
     allChip.className = 'modal-jenis-chip' + (!activeModalJenis ? ' active' : '');
-    allChip.innerHTML = `🗂 Semua <span class="mjc-count">${pkgs.length}</span>`;
+    allChip.innerHTML = '🗂 Semua <span class="mjc-count">' + pkgs.length + '</span>';
     allChip.onclick = () => { activeModalJenis = null; buildModalJenisRow(pkgs); renderModalBody(pkgs); };
     row.appendChild(allChip);
 
     JENIS_DEF.forEach(j => {
       const st = stats[j.key];
-      if (!st.count) return;
+      if (!st || !st.count) return; // sembunyikan jenis yang tidak ada datanya
       const chip = document.createElement('div');
       chip.className = 'modal-jenis-chip' + (activeModalJenis === j.key ? ' active' : '');
-      chip.innerHTML = `${j.icon} ${j.key} <span class="mjc-count">${st.count}</span>`;
+      chip.innerHTML = j.icon + ' ' + j.key + ' <span class="mjc-count">' + st.count + '</span>';
       chip.onclick = () => {
         activeModalJenis = activeModalJenis === j.key ? null : j.key;
         buildModalJenisRow(pkgs);
@@ -2856,15 +2867,16 @@
     // Totals footer row
     const totalPagu = pkgs.reduce((a, p) => a + p.pagu, 0);
     const totalReal = pkgs.reduce((a, p) => a + p.realisasi, 0);
-    const totalEfis = pkgs.filter(p => p.realisasi > 0).reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    // Efisiensi = total pagu RUP - total realisasi (semua paket)
+    const totalEfis = totalPagu - totalReal;
+    const efisFooterClass = totalEfis >= 0 ? 'efisiensi-pos' : 'efisiensi-neg';
     const tfoot = document.createElement('tr');
     tfoot.style.cssText = 'font-weight:700;background:var(--slate-50);border-top:2px solid var(--slate-200)';
-    tfoot.innerHTML = `
-      <td colspan="5" style="font-size:11px;color:var(--slate-600)">TOTAL · ${pkgs.length} paket</td>
-      <td class="r"><span class="money">${fmt(totalPagu)}</span></td>
-      <td class="r"><span class="money">${fmt(totalReal)}</span></td>
-      <td class="r"><span class="money efisiensi-pos">${fmt(totalEfis)}</span></td>
-    `;
+    tfoot.innerHTML =
+      '<td colspan="5" style="font-size:11px;color:var(--slate-600)">TOTAL · ' + pkgs.length + ' paket</td>' +
+      '<td class="r"><span class="money">' + fmt(totalPagu) + '</span></td>' +
+      '<td class="r"><span class="money">' + fmt(totalReal) + '</span></td>' +
+      '<td class="r"><span class="money ' + efisFooterClass + '">' + fmt(Math.abs(totalEfis)) + '</span></td>';
     tbody.appendChild(tfoot);
   }
 
