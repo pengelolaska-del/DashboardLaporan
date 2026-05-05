@@ -43,13 +43,13 @@
     /* ─── LOADER ─────────────────────────────────────── */
     #loader {
       position: fixed; inset: 0; z-index: 9999;
-      background: var(--slate-900);
-      display: flex; flex-direction: column;
+      background: rgba(15,23,42,.92);
+      backdrop-filter: blur(4px);
+      display: none; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 20px;
-      transition: opacity .4s ease, visibility .4s ease;
+      transition: opacity .3s ease;
     }
-    #loader { display: none; }
 
     .loader-logo {
       font-size: 13px; font-weight: 700; letter-spacing: 3px;
@@ -205,10 +205,32 @@
       overflow: hidden;
     }
 
+    /* ── ANIMATIONS ─────────────────────────────────── */
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-50) 50%, var(--slate-100) 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 6px;
+    }
+    .anim-row { animation: fadeSlideIn .25s ease both; }
+    .anim-cards { animation: fadeSlideIn .3s ease both; }
+
     /* ─── STAT CARDS ─────────────────────────────────── */
     #cards-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
       flex-shrink: 0;
     }
@@ -222,6 +244,8 @@
       transition: transform .2s, box-shadow .2s;
     }
     .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-card { animation: fadeSlideIn .35s ease both; }
+    .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.10s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.20s}.stat-card:nth-child(5){animation-delay:.25s}.stat-card:nth-child(6){animation-delay:.30s}
     .stat-card::before {
       content: '';
       position: absolute; inset: 0;
@@ -239,6 +263,7 @@
     .card-epurch  { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
     .card-swak    { background: linear-gradient(135deg, #164e63, #0891b2); }
     .card-real    { background: linear-gradient(135deg, #92400e, #d97706); }
+    .card-efis    { background: linear-gradient(135deg, #065f46, #10b981); }
 
     /* ─── BOTTOM SECTION ─────────────────────────────── */
     /* Layout: [filter kiri] [tabel tengah] [jenis kanan] */
@@ -300,7 +325,7 @@
     .filter-chip.show { display: flex; }
     .filter-chip-close { cursor: pointer; font-size: 12px; line-height: 1; opacity: .7; transition: opacity .15s; }
     .filter-chip-close:hover { opacity: 1; }
-    .panel-body { overflow-y: auto; flex: 1; }
+    .panel-body { overflow-y: auto; flex: 1; scroll-behavior: smooth; }
     .panel-body::-webkit-scrollbar { width: 3px; }
     .panel-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
 
@@ -314,7 +339,7 @@
       margin: 1px 0; user-select: none;
     }
     .mini-row:last-child { border-bottom: none; }
-    .mini-row:hover { background: var(--slate-50); }
+    .mini-row:hover { background: var(--slate-50); transform: translateX(2px); }
     .mini-row.active { background: #eff6ff; border-bottom-color: transparent; box-shadow: inset 0 0 0 1.5px var(--blue); }
     .mini-row.active .name { color: var(--blue); font-weight: 700; }
     .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
@@ -364,8 +389,8 @@
     }
     thead th.r { text-align: right; }
     thead th.c { text-align: center; }
-    tbody tr { border-bottom: 1px solid var(--slate-100); transition: background .12s; cursor: pointer; }
-    tbody tr:hover { background: #eff6ff; }
+    tbody tr { border-bottom: 1px solid var(--slate-100); transition: background .15s ease, box-shadow .15s ease; cursor: pointer; }
+    tbody tr:hover { background: #eff6ff; box-shadow: 0 1px 6px rgba(37,99,235,.06); }
     tbody tr:last-child { border-bottom: none; }
     tbody tr.active-row { background: #dbeafe; }
     td { padding: 9px 12px; color: var(--slate-700); vertical-align: middle; }
@@ -450,7 +475,7 @@
       display: flex; align-items: center; justify-content: center;
       transition: background .15s;
     }
-    #modal-close:hover { background: var(--slate-100); }
+    #modal-close:hover { background: var(--slate-100); transform: scale(1.1); }
 
     #modal-body { flex: 1; overflow-y: auto; }
     #modal-body::-webkit-scrollbar { width: 5px; }
@@ -552,7 +577,7 @@
 
     /* ─── PAGE VISIBILITY ────────────────────────────── */
     .page { display: none; flex: 1; min-height: 0; flex-direction: column; }
-    .page.active { display: flex; }
+    .page.active { display: flex; animation: fadeIn .2s ease; }
 
     /* hide dashboard-only controls when on comparison page */
     #dashboard-controls { display: flex; align-items: center; gap: 8px; }
@@ -980,7 +1005,7 @@
     /* Tablet landscape (≤1280px): kurangi kolom jenis */
     @media (max-width: 1280px) {
       #bottom-section { grid-template-columns: 190px 1fr 200px; }
-      #cards-row { grid-template-columns: repeat(5, 1fr); }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
     /* Tablet portrait (≤1024px): sembunyikan panel kiri, jenis di bawah */
@@ -1012,7 +1037,7 @@
       #dashboard-controls { gap: 4px; }
       .btn { padding: 6px 10px; font-size: 11px; }
       #main-wrapper { padding: 8px 10px; gap: 8px; }
-      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
       #bottom-section { grid-template-areas: "table" "side" "jenis"; }
       #tbl-search { width: 130px; }
       #table-toolbar { flex-wrap: wrap; gap: 6px; }
@@ -1022,8 +1047,8 @@
 
     /* Small mobile (≤480px) */
     @media (max-width: 480px) {
-      #cards-row { grid-template-columns: 1fr 1fr; }
-      .stat-card:last-child { grid-column: span 2; }
+      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(5), .stat-card:nth-child(6) { grid-column: span 1; }
       #nav-tabs { gap: 2px; }
       .nav-tab span:not(:first-child) { display: none; }
     }
@@ -1161,7 +1186,14 @@
       <div class="icon">✅</div>
       <div class="label">Total Realisasi</div>
       <div class="value" id="c-real">Rp 0</div>
-      <div class="sub" id="c-real-sub">0 Paket Selesai</div>
+      <div class="sub" id="c-real-sub">0 Paket Realisasi</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-efis">
+      <div class="icon">💰</div>
+      <div class="label">Efisiensi</div>
+      <div class="value" id="c-efis">Rp 0</div>
+      <div class="sub" id="c-efis-sub">0% dari Pagu</div>
       <div class="stripe"></div>
     </div>
   </div>
@@ -1212,11 +1244,12 @@
         <table id="satkerTable">
           <thead>
             <tr>
-              <th style="width:38%">Satuan Kerja</th>
+              <th style="width:35%">Satuan Kerja</th>
               <th class="c">Paket</th>
-              <th class="c">Berjalan</th>
+              <th class="c">Realisasi</th>
               <th class="r">Pagu RUP</th>
               <th class="r">Realisasi / Serapan</th>
+              <th class="r">Efisiensi</th>
             </tr>
           </thead>
           <tbody id="satkerBody"></tbody>
@@ -1381,7 +1414,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw071Mo77Nls857RcIk_dTycm5aL7En2UsQEhIoSDUmTR2YJDJ1XhzIYgzrgYTrXlhmpQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxVDJCI2gypCIm4Hcu-ovnEFNeyu22mma8Ilq7ID8DGnFv3lUbmMIz9TZmWYM84i2R7cg/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1409,13 +1442,69 @@
   ];
 
   // ── INIT ────────────────────────────────────────────────
+  // Default: bulan sekarang, tapi akan auto-fallback ke bulan terbaru yang ada data
   let currentBulan = BULAN_LIST[new Date().getMonth()];
+  let _autoDetecting = false; // flag agar auto-detect tidak loop
 
   window.addEventListener('DOMContentLoaded', () => {
     buildBulanDropdown(currentBulan);
     buildBulanPicker();
     showLoader(false);
+    // Auto-detect bulan terbaru yang ada data, mulai dari bulan sekarang mundur
+    autoDetectBulan();
   });
+
+  // Coba bulan dari sekarang mundur sampai ketemu data valid
+  async function autoDetectBulan() {
+    _autoDetecting = true;
+    const nowIdx = new Date().getMonth(); // 0-based
+    // Coba: bulan sekarang, bulan lalu, 2 bulan lalu, dst — max 6 bulan ke belakang
+    const candidates = [];
+    for (let i = 0; i <= 5; i++) {
+      const idx = ((nowIdx - i) + 12) % 12;
+      candidates.push(BULAN_LIST[idx]);
+    }
+    for (const b of candidates) {
+      const ok = await probeBulan(b);
+      if (ok) {
+        currentBulan = b;
+        buildBulanDropdown(currentBulan);
+        _autoDetecting = false;
+        refreshData();
+        return;
+      }
+    }
+    // Tidak ada satu pun yang berhasil — tetap pakai bulan sekarang dan tampilkan error normal
+    _autoDetecting = false;
+    refreshData();
+  }
+
+  // Probe: kirim request ke GAS, kembalikan true jika ada data, false jika error/kosong
+  async function probeBulan(bulan) {
+    try {
+      const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
+      // Timeout singkat 12 detik untuk probe
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 12000);
+      let json;
+      try {
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(tid);
+        if (!res.ok) return false;
+        json = await res.json();
+      } catch {
+        clearTimeout(tid);
+        // Fallback JSONP
+        try { json = await fetchViaJsonp(url); } catch { return false; }
+      }
+      if (json.error) return false;
+      const rows = (json.rekapSatker || []);
+      const pkgs = (json.allPackages  || []);
+      return rows.length > 0 || pkgs.length > 0;
+    } catch {
+      return false;
+    }
+  }
 
   // ── CUSTOM BULAN DROPDOWN (DASHBOARD) ───────────────────
   function buildBulanDropdown(selectedBulan) {
@@ -1463,6 +1552,61 @@
   }
 
   // ── FETCH ────────────────────────────────────────────────
+  // ── NORMALISASI DATA DARI GAS ───────────────────────────
+  // Memastikan semua field yang diakses frontend selalu ada
+  function normalizeSatker(s) {
+    if (!s) s = {};
+    if (!s.caraPengadaan) s.caraPengadaan = {};
+    if (!s.caraPengadaan.Penyedia)  s.caraPengadaan.Penyedia  = { count: 0, nilai: 0 };
+    if (!s.caraPengadaan.Swakelola) s.caraPengadaan.Swakelola = { count: 0, nilai: 0 };
+    if (!s.progresStatus) s.progresStatus = {};
+    if (!s.progresStatus.Selesai)  s.progresStatus.Selesai  = { count: 0, nilai: 0 };
+    if (!s.progresStatus.Berjalan) s.progresStatus.Berjalan = { count: 0, nilai: 0 };
+    s.namaSatker      = s.namaSatker      || 'Tanpa Nama';
+    s.totalPaket      = s.totalPaket      || 0;
+    s.dilaksanakan    = s.dilaksanakan    || 0;
+    s.belumDikerjakan = s.belumDikerjakan || 0;
+    s.nilaiRUP        = s.nilaiRUP        || 0;
+    s.nilaiReal       = s.nilaiReal       || 0;
+    return s;
+  }
+
+  function normalizePackage(p) {
+    if (!p) p = {};
+    p.satker    = p.satker    || '';
+    p.kode      = p.kode      || '';
+    p.nama      = p.nama      || '-';
+    p.jenis     = p.jenis     || 'Jasa Lainnya';
+    p.metode    = p.metode    || 'Swakelola';
+    p.status    = p.status    || 'Belum Realisasi';
+    p.pagu      = parseFloat(p.pagu)      || 0;
+    p.realisasi = parseFloat(p.realisasi) || 0;
+    return p;
+  }
+
+  // ── JSONP FALLBACK (untuk mengatasi CORS) ───────────────
+  function fetchViaJsonp(url) {
+    return new Promise((resolve, reject) => {
+      const cbName = '_gasCb_' + Date.now();
+      const script = document.createElement('script');
+      const timer  = setTimeout(() => {
+        cleanup();
+        reject(new Error('JSONP timeout'));
+      }, 25000);
+
+      function cleanup() {
+        clearTimeout(timer);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[cbName] = (data) => { cleanup(); resolve(data); };
+      script.onerror = () => { cleanup(); reject(new Error('JSONP script error')); };
+      script.src = url + '&callback=' + cbName;
+      document.head.appendChild(script);
+    });
+  }
+
   async function refreshData() {
     const bulan = currentBulan;
 
@@ -1478,15 +1622,51 @@
 
     try {
       const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
-      setLoaderProgress(30, 'Mengambil data RUP & Realisasi…');
-      const res  = await fetch(url);
-      setLoaderProgress(65, 'Memproses data…');
-      const json = await res.json();
+      setLoaderProgress(30, 'Mengambil data dari Google Sheets…');
 
-      if (json.error) throw new Error(json.error);
+      // Timeout 30 detik
+      const controller = new AbortController();
+      const timeoutId  = setTimeout(() => controller.abort(), 30000);
 
-      allData = json.rekapSatker || [];
-      allPkg  = json.allPackages  || [];
+      let res, json;
+      try {
+        res = await fetch(url, { method: 'GET', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        setLoaderProgress(65, 'Memproses data…');
+        json = await res.json();
+      } catch (fetchErr) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('⏱ Koneksi timeout (30 detik). Periksa koneksi internet Anda.');
+        }
+        // --- Fallback: JSONP (mengatasi CORS di beberapa browser/lingkungan) ---
+        setLoaderProgress(45, 'Mencoba metode alternatif (JSONP)…');
+        try {
+          json = await fetchViaJsonp(url);
+          setLoaderProgress(65, 'Memproses data…');
+        } catch (jsonpErr) {
+          throw new Error(
+            '❌ Tidak dapat terhubung ke Google Apps Script.\n\n' +
+            'Langkah perbaikan:\n' +
+            '1. Buka Google Apps Script\n' +
+            '2. Deploy → New Deployment\n' +
+            '3. Type: Web App, Execute as: Me, Who has access: Anyone\n' +
+            '4. Salin URL baru & update GAS_URL di index.html\n\n' +
+            'Detail error: ' + fetchErr.message
+          );
+
+        }
+      }
+
+      if (json.error) throw new Error('Error dari server: ' + json.error);
+
+      allData = (json.rekapSatker || []).map(normalizeSatker);
+      allPkg  = (json.allPackages || []).map(normalizePackage);
+
+      if (!allData.length && !allPkg.length) {
+        throw new Error('Tidak ada data untuk bulan ' + bulan + '. Pastikan sheet "RUP_' + bulan + '" dan "Realisasi_' + bulan + '" ada dan berisi data.');
+      }
 
       setLoaderProgress(85, 'Merender dashboard…');
       buildCards(allData, allPkg);
@@ -1497,11 +1677,12 @@
       setLoaderProgress(100, 'Selesai!');
 
       setTimeout(() => showLoader(false), 300);
-      toast(`✅ Data ${bulan} berhasil dimuat — ${allData.length} satker`);
+      toast(`✅ Data ${bulan} berhasil dimuat — ${allData.length} satker, ${allPkg.length} paket`);
     } catch (e) {
       setLoaderProgress(100, '');
       setTimeout(() => showLoader(false), 200);
-      showError(e.message);
+      // Saat auto-detect, jangan tampilkan error overlay (akan retry bulan lain)
+      if (!_autoDetecting) showError(e.message);
     }
   }
 
@@ -1529,39 +1710,53 @@
   }
 
   // ── CARDS ────────────────────────────────────────────────
+  // Helper aman: akses nested object tanpa crash jika undefined
+  function safeGet(obj, ...keys) {
+    return keys.reduce((o, k) => (o && o[k] !== undefined ? o[k] : 0), obj);
+  }
+
   function buildCards(satkers, pkgs) {
-    const totRUP   = satkers.reduce((a, s) => a + s.nilaiRUP, 0);
-    const totPaket = satkers.reduce((a, s) => a + s.totalPaket, 0);
+    const totRUP   = satkers.reduce((a, s) => a + (s.nilaiRUP   || 0), 0);
+    const totPaket = satkers.reduce((a, s) => a + (s.totalPaket || 0), 0);
 
     const penyedia = satkers.reduce((a, s) => ({
-      v: a.v + s.caraPengadaan.Penyedia.nilai,
-      c: a.c + s.caraPengadaan.Penyedia.count
+      v: a.v + safeGet(s, 'caraPengadaan', 'Penyedia', 'nilai'),
+      c: a.c + safeGet(s, 'caraPengadaan', 'Penyedia', 'count')
     }), { v: 0, c: 0 });
 
     const swak = satkers.reduce((a, s) => ({
-      v: a.v + s.caraPengadaan.Swakelola.nilai,
-      c: a.c + s.caraPengadaan.Swakelola.count
+      v: a.v + safeGet(s, 'caraPengadaan', 'Swakelola', 'nilai'),
+      c: a.c + safeGet(s, 'caraPengadaan', 'Swakelola', 'count')
     }), { v: 0, c: 0 });
 
-    // E-Purchasing: metode 'E-Purchasing' atau 'e-Purchasing'
-    const ep = pkgs.filter(p => /e[\-\s]?purchasing/i.test(p.metode));
-    const epNilai = ep.reduce((a, p) => a + p.pagu, 0);
+    // E-Purchasing: metode 'E-Katalog', 'Toko Daring', atau 'e-Purchasing'
+    const ep = pkgs.filter(p => /e[\-\s]?katalog|toko[\s]?daring|e[\-\s]?purchasing/i.test(p.metode));
+    const epNilai = ep.reduce((a, p) => a + (p.pagu || 0), 0);
 
-    const selesai = satkers.reduce((a, s) => ({
-      v: a.v + s.progresStatus.Selesai.nilai,
-      c: a.c + s.progresStatus.Selesai.count
-    }), { v: 0, c: 0 });
+    // Total Realisasi: sum nilaiReal dari semua satker (join RUP-Realisasi via kode)
+    const totReal = satkers.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+    const totPkgReal = pkgs.filter(p => p.realisasi > 0).length;
+
+    // Efisiensi: hanya dari paket yang ada nilai realisasi (join via kode RUP berhasil)
+    const pkgsReal   = pkgs.filter(p => p.realisasi > 0);
+    const paguReal   = pkgsReal.reduce((a, p) => a + p.pagu, 0);   // pagu dari paket yg sudah realisasi
+    const totEfis    = pkgsReal.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    // Persen efisiensi dari pagu paket yg sudah direalisasikan (bukan total pagu)
+    const pctEfis    = paguReal > 0 ? (totEfis / paguReal * 100) : 0;
+    const pctSerapan = totRUP  > 0 ? (totReal  / totRUP  * 100) : 0;
 
     setText('c-rup',          fmt(totRUP));
-    setText('c-rup-sub',      `${totPaket} Paket`);
+    setText('c-rup-sub',      totPaket + ' Paket');
     setText('c-penyedia',     fmt(penyedia.v));
-    setText('c-penyedia-sub', `${penyedia.c} Paket`);
+    setText('c-penyedia-sub', penyedia.c + ' Paket');
     setText('c-epurch',       fmt(epNilai));
-    setText('c-epurch-sub',   `${ep.length} Transaksi`);
+    setText('c-epurch-sub',   ep.length + ' Transaksi');
     setText('c-swak',         fmt(swak.v));
-    setText('c-swak-sub',     `${swak.c} Paket`);
-    setText('c-real',         fmt(selesai.v));
-    setText('c-real-sub',     `${selesai.c} Paket Selesai`);
+    setText('c-swak-sub',     swak.c + ' Paket');
+    setText('c-real',         fmt(totReal));
+    setText('c-real-sub',     totPkgReal + ' Paket · ' + pctSerapan.toFixed(1) + '% Serapan');
+    setText('c-efis',         fmt(totEfis));
+    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Pagu Terealisasi');
   }
 
   // ── SIDE PANEL ───────────────────────────────────────────
@@ -2031,7 +2226,10 @@
           const res  = await fetch(url);
           const json = await res.json();
           if (json.error) throw new Error(json.error);
-          compDataCache[bulan] = { rekapSatker: json.rekapSatker || [], allPackages: json.allPackages || [] };
+          compDataCache[bulan] = {
+            rekapSatker: (json.rekapSatker || []).map(normalizeSatker),
+            allPackages: (json.allPackages  || []).map(normalizePackage)
+          };
           done++;
           setLoaderProgress(10 + Math.round(done / toFetch.length * 80), `Memuat ${bulan}…`);
         }
@@ -2346,25 +2544,40 @@
     tbody.innerHTML = '';
     document.getElementById('toolbar-count').textContent = `${data.length} Satker`;
 
-    if (!data.length) {
-      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
+    // Hanya tampilkan satker yang memiliki paket
+    const filtered = data.filter(s => s.totalPaket > 0);
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
       return;
     }
 
-    data.forEach(s => {
+    filtered.forEach((s, idx) => {
       const pct = s.nilaiRUP > 0 ? (s.nilaiReal / s.nilaiRUP * 100) : 0;
       const pctStr = pct.toFixed(1) + '%';
       const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
 
+      // Efisiensi: hanya dari paket yang ada realisasi (join RUP)
+      // Ambil dari paket yang satker-nya cocok dan realisasi > 0
+      const pkgsSatker = allPkg.filter(p => p.satker === s.namaSatker && p.realisasi > 0);
+      const efisiensi  = pkgsSatker.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+      const hasReal    = s.nilaiReal > 0;
+
+      const efisClass = !hasReal ? 'efisiensi-zero'
+                      : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+      const efisStr   = !hasReal ? '—' : fmt(efisiensi);
+
       const tr = document.createElement('tr');
+      tr.className = 'anim-row';
+      tr.style.animationDelay = (idx * 18) + 'ms';
       tr.dataset.satker = s.namaSatker;
       tr.innerHTML = `
         <td>
           <div class="satker-name">${s.namaSatker}</div>
-          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket dilaksanakan</div>
+          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket terealisasi</div>
         </td>
         <td class="c"><span class="badge-paket">${s.totalPaket}</span></td>
-        <td class="c"><span class="badge-paket badge-jalan">${s.dilaksanakan}</span></td>
+        <td class="c"><span class="badge-paket ${s.dilaksanakan > 0 ? 'badge-jalan' : ''}">${s.dilaksanakan}</span></td>
         <td class="r"><span class="money">${fmt(s.nilaiRUP)}</span></td>
         <td class="r">
           <div class="prog-wrap">
@@ -2373,6 +2586,7 @@
             <div class="prog-track"><div class="prog-fill fill-${colorClass}" style="width:${Math.min(pct,100)}%"></div></div>
           </div>
         </td>
+        <td class="r"><span class="money ${efisClass}">${efisStr}</span></td>
       `;
       tr.addEventListener('click', () => openModal(s));
       tbody.appendChild(tr);
@@ -2440,7 +2654,8 @@
     // Totals
     const totalPagu  = pkgs.reduce((a, p) => a + p.pagu, 0);
     const totalReal  = pkgs.reduce((a, p) => a + p.realisasi, 0);
-    const totalEfis  = totalPagu - totalReal;
+    // Efisiensi: hanya dari paket yang ada realisasi (join kode RUP berhasil)
+    const totalEfis  = pkgs.filter(p => p.realisasi > 0).reduce((a, p) => a + (p.pagu - p.realisasi), 0);
     const totalPkgs  = allPkg.filter(p => p.satker === satker.namaSatker).length;
     const filterNote = hasFilter ? ` · (${pkgs.length} dari ${totalPkgs} paket)` : '';
     document.getElementById('modal-sub').innerHTML =
@@ -2503,12 +2718,14 @@
       const jenisDef = JENIS_DEF.find(j => j.key === jenis) || JENIS_DEF[3];
 
       // Efisiensi: pagu - realisasi (hanya jika ada realisasi, i.e. kode RUP match)
+      // hasReal: hanya true jika ada join data Realisasi via Kode RUP
       const hasReal    = p.realisasi > 0;
       const efisiensi  = hasReal ? (p.pagu - p.realisasi) : null;
       const efisClass  = efisiensi === null ? 'efisiensi-zero'
                        : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
       const efisStr    = efisiensi === null ? '—'
-                       : `${efisiensi >= 0 ? '' : '▲ '}${fmt(Math.abs(efisiensi))}`;
+                       : efisiensi >= 0 ? fmt(efisiensi)
+                       : `▲ ${fmt(Math.abs(efisiensi))}`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
