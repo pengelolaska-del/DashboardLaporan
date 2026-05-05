@@ -43,13 +43,13 @@
     /* ─── LOADER ─────────────────────────────────────── */
     #loader {
       position: fixed; inset: 0; z-index: 9999;
-      background: var(--slate-900);
-      display: flex; flex-direction: column;
+      background: rgba(15,23,42,.92);
+      backdrop-filter: blur(4px);
+      display: none; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 20px;
-      transition: opacity .4s ease, visibility .4s ease;
+      transition: opacity .3s ease;
     }
-    #loader { display: none; }
 
     .loader-logo {
       font-size: 13px; font-weight: 700; letter-spacing: 3px;
@@ -205,10 +205,32 @@
       overflow: hidden;
     }
 
+    /* ── ANIMATIONS ─────────────────────────────────── */
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-50) 50%, var(--slate-100) 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 6px;
+    }
+    .anim-row { animation: fadeSlideIn .25s ease both; }
+    .anim-cards { animation: fadeSlideIn .3s ease both; }
+
     /* ─── STAT CARDS ─────────────────────────────────── */
     #cards-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
       flex-shrink: 0;
     }
@@ -222,6 +244,8 @@
       transition: transform .2s, box-shadow .2s;
     }
     .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .stat-card { animation: fadeSlideIn .35s ease both; }
+    .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.10s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.20s}.stat-card:nth-child(5){animation-delay:.25s}.stat-card:nth-child(6){animation-delay:.30s}
     .stat-card::before {
       content: '';
       position: absolute; inset: 0;
@@ -239,6 +263,7 @@
     .card-epurch  { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
     .card-swak    { background: linear-gradient(135deg, #164e63, #0891b2); }
     .card-real    { background: linear-gradient(135deg, #92400e, #d97706); }
+    .card-efis    { background: linear-gradient(135deg, #065f46, #10b981); }
 
     /* ─── BOTTOM SECTION ─────────────────────────────── */
     /* Layout: [filter kiri] [tabel tengah] [jenis kanan] */
@@ -300,7 +325,7 @@
     .filter-chip.show { display: flex; }
     .filter-chip-close { cursor: pointer; font-size: 12px; line-height: 1; opacity: .7; transition: opacity .15s; }
     .filter-chip-close:hover { opacity: 1; }
-    .panel-body { overflow-y: auto; flex: 1; }
+    .panel-body { overflow-y: auto; flex: 1; scroll-behavior: smooth; }
     .panel-body::-webkit-scrollbar { width: 3px; }
     .panel-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
 
@@ -314,7 +339,7 @@
       margin: 1px 0; user-select: none;
     }
     .mini-row:last-child { border-bottom: none; }
-    .mini-row:hover { background: var(--slate-50); }
+    .mini-row:hover { background: var(--slate-50); transform: translateX(2px); }
     .mini-row.active { background: #eff6ff; border-bottom-color: transparent; box-shadow: inset 0 0 0 1.5px var(--blue); }
     .mini-row.active .name { color: var(--blue); font-weight: 700; }
     .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
@@ -364,8 +389,8 @@
     }
     thead th.r { text-align: right; }
     thead th.c { text-align: center; }
-    tbody tr { border-bottom: 1px solid var(--slate-100); transition: background .12s; cursor: pointer; }
-    tbody tr:hover { background: #eff6ff; }
+    tbody tr { border-bottom: 1px solid var(--slate-100); transition: background .15s ease, box-shadow .15s ease; cursor: pointer; }
+    tbody tr:hover { background: #eff6ff; box-shadow: 0 1px 6px rgba(37,99,235,.06); }
     tbody tr:last-child { border-bottom: none; }
     tbody tr.active-row { background: #dbeafe; }
     td { padding: 9px 12px; color: var(--slate-700); vertical-align: middle; }
@@ -450,7 +475,7 @@
       display: flex; align-items: center; justify-content: center;
       transition: background .15s;
     }
-    #modal-close:hover { background: var(--slate-100); }
+    #modal-close:hover { background: var(--slate-100); transform: scale(1.1); }
 
     #modal-body { flex: 1; overflow-y: auto; }
     #modal-body::-webkit-scrollbar { width: 5px; }
@@ -552,7 +577,7 @@
 
     /* ─── PAGE VISIBILITY ────────────────────────────── */
     .page { display: none; flex: 1; min-height: 0; flex-direction: column; }
-    .page.active { display: flex; }
+    .page.active { display: flex; animation: fadeIn .2s ease; }
 
     /* hide dashboard-only controls when on comparison page */
     #dashboard-controls { display: flex; align-items: center; gap: 8px; }
@@ -980,7 +1005,7 @@
     /* Tablet landscape (≤1280px): kurangi kolom jenis */
     @media (max-width: 1280px) {
       #bottom-section { grid-template-columns: 190px 1fr 200px; }
-      #cards-row { grid-template-columns: repeat(5, 1fr); }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
     /* Tablet portrait (≤1024px): sembunyikan panel kiri, jenis di bawah */
@@ -1012,7 +1037,7 @@
       #dashboard-controls { gap: 4px; }
       .btn { padding: 6px 10px; font-size: 11px; }
       #main-wrapper { padding: 8px 10px; gap: 8px; }
-      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
       #bottom-section { grid-template-areas: "table" "side" "jenis"; }
       #tbl-search { width: 130px; }
       #table-toolbar { flex-wrap: wrap; gap: 6px; }
@@ -1022,8 +1047,8 @@
 
     /* Small mobile (≤480px) */
     @media (max-width: 480px) {
-      #cards-row { grid-template-columns: 1fr 1fr; }
-      .stat-card:last-child { grid-column: span 2; }
+      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      .stat-card:nth-child(5), .stat-card:nth-child(6) { grid-column: span 1; }
       #nav-tabs { gap: 2px; }
       .nav-tab span:not(:first-child) { display: none; }
     }
@@ -1161,7 +1186,14 @@
       <div class="icon">✅</div>
       <div class="label">Total Realisasi</div>
       <div class="value" id="c-real">Rp 0</div>
-      <div class="sub" id="c-real-sub">0 Paket Selesai</div>
+      <div class="sub" id="c-real-sub">0 Paket Realisasi</div>
+      <div class="stripe"></div>
+    </div>
+    <div class="stat-card card-efis">
+      <div class="icon">💰</div>
+      <div class="label">Efisiensi</div>
+      <div class="value" id="c-efis">Rp 0</div>
+      <div class="sub" id="c-efis-sub">0% dari Pagu</div>
       <div class="stripe"></div>
     </div>
   </div>
@@ -1212,11 +1244,12 @@
         <table id="satkerTable">
           <thead>
             <tr>
-              <th style="width:38%">Satuan Kerja</th>
+              <th style="width:35%">Satuan Kerja</th>
               <th class="c">Paket</th>
-              <th class="c">Berjalan</th>
+              <th class="c">Realisasi</th>
               <th class="r">Pagu RUP</th>
               <th class="r">Realisasi / Serapan</th>
+              <th class="r">Efisiensi</th>
             </tr>
           </thead>
           <tbody id="satkerBody"></tbody>
@@ -1645,10 +1678,15 @@
     const ep = pkgs.filter(p => /e[\-\s]?katalog|toko[\s]?daring|e[\-\s]?purchasing/i.test(p.metode));
     const epNilai = ep.reduce((a, p) => a + (p.pagu || 0), 0);
 
-    const selesai = satkers.reduce((a, s) => ({
-      v: a.v + safeGet(s, 'progresStatus', 'Selesai', 'nilai'),
-      c: a.c + safeGet(s, 'progresStatus', 'Selesai', 'count')
-    }), { v: 0, c: 0 });
+    // Total Realisasi: sum nilaiReal dari semua satker (join RUP-Realisasi via kode)
+    const totReal = satkers.reduce((a, s) => a + (s.nilaiReal || 0), 0);
+    const totPkgReal = pkgs.filter(p => p.realisasi > 0).length;
+
+    // Efisiensi: hanya dari paket yang ada join realisasi (realisasi > 0)
+    const totEfis = pkgs
+      .filter(p => p.realisasi > 0)
+      .reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    const pctEfis = totRUP > 0 ? (totEfis / totRUP * 100) : 0;
 
     setText('c-rup',          fmt(totRUP));
     setText('c-rup-sub',      totPaket + ' Paket');
@@ -1658,8 +1696,10 @@
     setText('c-epurch-sub',   ep.length + ' Transaksi');
     setText('c-swak',         fmt(swak.v));
     setText('c-swak-sub',     swak.c + ' Paket');
-    setText('c-real',         fmt(selesai.v));
-    setText('c-real-sub',     selesai.c + ' Paket Selesai');
+    setText('c-real',         fmt(totReal));
+    setText('c-real-sub',     totPkgReal + ' Paket Realisasi');
+    setText('c-efis',         fmt(totEfis));
+    setText('c-efis-sub',     pctEfis.toFixed(1) + '% dari Pagu');
   }
 
   // ── SIDE PANEL ───────────────────────────────────────────
@@ -2447,25 +2487,40 @@
     tbody.innerHTML = '';
     document.getElementById('toolbar-count').textContent = `${data.length} Satker`;
 
-    if (!data.length) {
-      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
+    // Hanya tampilkan satker yang memiliki paket
+    const filtered = data.filter(s => s.totalPaket > 0);
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data satker</p></div></td></tr>`;
       return;
     }
 
-    data.forEach(s => {
+    filtered.forEach((s, idx) => {
       const pct = s.nilaiRUP > 0 ? (s.nilaiReal / s.nilaiRUP * 100) : 0;
       const pctStr = pct.toFixed(1) + '%';
       const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
 
+      // Efisiensi: hanya dari paket yang ada realisasi (join RUP)
+      // Ambil dari paket yang satker-nya cocok dan realisasi > 0
+      const pkgsSatker = allPkg.filter(p => p.satker === s.namaSatker && p.realisasi > 0);
+      const efisiensi  = pkgsSatker.reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+      const hasReal    = s.nilaiReal > 0;
+
+      const efisClass = !hasReal ? 'efisiensi-zero'
+                      : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+      const efisStr   = !hasReal ? '—' : fmt(efisiensi);
+
       const tr = document.createElement('tr');
+      tr.className = 'anim-row';
+      tr.style.animationDelay = (idx * 18) + 'ms';
       tr.dataset.satker = s.namaSatker;
       tr.innerHTML = `
         <td>
           <div class="satker-name">${s.namaSatker}</div>
-          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket dilaksanakan</div>
+          <div class="satker-sub">${s.dilaksanakan} dari ${s.totalPaket} paket terealisasi</div>
         </td>
         <td class="c"><span class="badge-paket">${s.totalPaket}</span></td>
-        <td class="c"><span class="badge-paket badge-jalan">${s.dilaksanakan}</span></td>
+        <td class="c"><span class="badge-paket ${s.dilaksanakan > 0 ? 'badge-jalan' : ''}">${s.dilaksanakan}</span></td>
         <td class="r"><span class="money">${fmt(s.nilaiRUP)}</span></td>
         <td class="r">
           <div class="prog-wrap">
@@ -2474,6 +2529,7 @@
             <div class="prog-track"><div class="prog-fill fill-${colorClass}" style="width:${Math.min(pct,100)}%"></div></div>
           </div>
         </td>
+        <td class="r"><span class="money ${efisClass}">${efisStr}</span></td>
       `;
       tr.addEventListener('click', () => openModal(s));
       tbody.appendChild(tr);
@@ -2541,7 +2597,8 @@
     // Totals
     const totalPagu  = pkgs.reduce((a, p) => a + p.pagu, 0);
     const totalReal  = pkgs.reduce((a, p) => a + p.realisasi, 0);
-    const totalEfis  = totalPagu - totalReal;
+    // Efisiensi: hanya dari paket yang ada realisasi (join kode RUP berhasil)
+    const totalEfis  = pkgs.filter(p => p.realisasi > 0).reduce((a, p) => a + (p.pagu - p.realisasi), 0);
     const totalPkgs  = allPkg.filter(p => p.satker === satker.namaSatker).length;
     const filterNote = hasFilter ? ` · (${pkgs.length} dari ${totalPkgs} paket)` : '';
     document.getElementById('modal-sub').innerHTML =
@@ -2604,12 +2661,14 @@
       const jenisDef = JENIS_DEF.find(j => j.key === jenis) || JENIS_DEF[3];
 
       // Efisiensi: pagu - realisasi (hanya jika ada realisasi, i.e. kode RUP match)
+      // hasReal: hanya true jika ada join data Realisasi via Kode RUP
       const hasReal    = p.realisasi > 0;
       const efisiensi  = hasReal ? (p.pagu - p.realisasi) : null;
       const efisClass  = efisiensi === null ? 'efisiensi-zero'
                        : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
       const efisStr    = efisiensi === null ? '—'
-                       : `${efisiensi >= 0 ? '' : '▲ '}${fmt(Math.abs(efisiensi))}`;
+                       : efisiensi >= 0 ? fmt(efisiensi)
+                       : `▲ ${fmt(Math.abs(efisiensi))}`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
