@@ -1381,7 +1381,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyNHl_7NMyapb2zlwbVTlSYjvmWygQ9nV3bX5JOBzEORcp5W00JS2HA_KEsLxbNaWE7zw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwBSWVXiXMdBh4uyFJwu-WjDkiU9WntFzCG8AlUKe3KF1ffm9NFetAPZffvKENfaBQebw/execexec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1575,7 +1575,8 @@
    * 5. Nama metode "-" ditampilkan sebagai "Swakelola".
    */
   function normMetode(m) {
-    return (!m || m.trim() === '-') ? 'Swakelola' : m.trim();
+    if (!m || m.trim() === '-' || m.trim() === '') return 'Swakelola';
+    return m.trim();
   }
 
   function buildSidePanel(pkgs) {
@@ -1702,20 +1703,21 @@
 
   // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
-    // Utamakan field jenis dari data sheet (dikirim oleh code.gs)
-    if (pkg.jenis) {
+    // 1. Utamakan field jenis yang sudah dinormalisasi dari code.gs
+    if (pkg.jenis && pkg.jenis.trim() && pkg.jenis.trim() !== '-') {
       const jRaw = pkg.jenis.trim();
-      // Cocokkan dengan key JENIS_DEF (case-insensitive partial match)
-      const found = JENIS_DEF.find(j =>
+      // Exact match dulu
+      const exact = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
+      if (exact) return exact.key;
+      // Partial match
+      const partial = JENIS_DEF.find(j =>
         jRaw.toLowerCase().includes(j.key.toLowerCase()) ||
         j.key.toLowerCase().includes(jRaw.toLowerCase())
       );
-      if (found) return found.key;
-      // Jika ada nilai tapi tidak cocok, kembalikan nilai aslinya
-      // agar tetap tampil (akan masuk chip-default)
-      return jRaw;
+      if (partial) return partial.key;
+      return jRaw; // kembalikan nilai asli jika tidak cocok
     }
-    // Fallback: deteksi dari nama paket (jika field jenis tidak ada)
+    // 2. Fallback: deteksi dari nama paket
     const nm = (pkg.nama || '').toLowerCase();
     for (let i = 0; i < JENIS_DEF.length - 1; i++) {
       if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
