@@ -1482,7 +1482,7 @@
         </div>
         <div id="summary-totals-body">
           <div class="summary-row">
-            <div class="summary-row-label">💰 Pagu (terealisasi)</div>
+            <div class="summary-row-label">💰 Pagu RUP</div>
             <div class="summary-row-value" id="sum-pagu">Rp 0</div>
           </div>
           <div class="summary-row">
@@ -2866,7 +2866,19 @@
     filtered.forEach((s, idx) => {
       // ── Sumber data ───────────────────────────────────────
       // allPkg adalah satu sumber kebenaran — sudah join RUP × Realisasi di server
-      const pkgs = pkgBySatker[s.namaSatker] || [];
+      let pkgs = pkgBySatker[s.namaSatker] || [];
+
+      // Terapkan filter metode & status agar nilai tabel konsisten dengan filter aktif
+      if (activeFilterMetode || activeFilterStatus) {
+        pkgs = pkgs.filter(p => {
+          const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
+          const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+          return metodeMatch && statusMatch;
+        });
+      }
+      if (activeFilterJenis) {
+        pkgs = pkgs.filter(p => detectJenis(p) === activeFilterJenis);
+      }
 
       // Nilai RUP   → sum p.pagu dari sheet RUP_<bulan>        (kolom J)
       const nilaiRUP  = pkgs.reduce((a, p) => a + (p.pagu      || 0), 0);
@@ -2926,13 +2938,25 @@
     let totalPkt = 0, totalPktReal = 0;
 
     filteredData.filter(s => s.totalPaket > 0).forEach(s => {
-      const pkgs  = pkgBySatker[s.namaSatker] || [];
-      // Hanya paket yang ada realisasinya
+      let pkgs  = pkgBySatker[s.namaSatker] || [];
+      // Terapkan filter metode & status agar ringkasan konsisten dengan tabel
+      if (activeFilterMetode || activeFilterStatus) {
+        pkgs = pkgs.filter(p => {
+          const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
+          const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+          return metodeMatch && statusMatch;
+        });
+      }
+      if (activeFilterJenis) {
+        pkgs = pkgs.filter(p => detectJenis(p) === activeFilterJenis);
+      }
+      // Total pagu semua paket terfilter (termasuk belum realisasi)
+      const paguSemua = pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
+      // Hanya paket yang ada realisasinya untuk menghitung realisasi & efisiensi
       const pkgsR = pkgs.filter(p => (p.realisasi || 0) > 0);
-      const paguR = pkgsR.reduce((a, p) => a + (p.pagu      || 0), 0);
       const realR = pkgsR.reduce((a, p) => a + (p.realisasi || 0), 0);
 
-      totalPaguReal += paguR;
+      totalPaguReal += paguSemua;
       totalReal     += realR;
       totalPkt      += pkgs.length;
       totalPktReal  += pkgsR.length;
