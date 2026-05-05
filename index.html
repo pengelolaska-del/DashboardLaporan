@@ -266,11 +266,11 @@
     .card-efis    { background: linear-gradient(135deg, #065f46, #10b981); }
 
     /* ─── BOTTOM SECTION ─────────────────────────────── */
-    /* Layout: [filter kiri] [tabel tengah] [jenis kanan] */
+    /* Layout: [filter kiri 190px] [tabel tengah flex] [jenis kanan 210px] */
     #bottom-section {
       flex: 1; min-height: 0;
       display: grid;
-      grid-template-columns: 200px 1fr 220px;
+      grid-template-columns: 190px 1fr 210px;
       grid-template-areas: "side table jenis";
       gap: 10px;
     }
@@ -287,6 +287,10 @@
       grid-area: jenis;
       display: flex; flex-direction: column;
       overflow: hidden; min-height: 0;
+    }
+    #jenis-panel-wrap .panel {
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
     }
 
     .panel {
@@ -1003,54 +1007,65 @@
 
     /* ── RESPONSIVE ──────────────────────────────────── */
     /* Tablet landscape (≤1280px): kurangi kolom jenis */
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    /* Large desktop — default: 3 kolom */
+
+    /* ≤1280px: sedikit kecilkan kolom samping */
     @media (max-width: 1280px) {
-      #bottom-section { grid-template-columns: 190px 1fr 200px; }
+      #bottom-section { grid-template-columns: 175px 1fr 195px; }
       #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* Tablet portrait (≤1024px): sembunyikan panel kiri, jenis di bawah */
+    /* ≤1024px: kolom jenis turun, side panel horizontal */
     @media (max-width: 1024px) {
       body { height: auto; overflow: auto; }
       #main-wrapper { overflow: visible; padding: 10px 12px; }
       #bottom-section {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         grid-template-areas:
-          "table"
-          "side"
-          "jenis";
+          "side jenis"
+          "table table";
         height: auto; min-height: unset;
       }
-      #side-panel { flex-direction: row; flex-wrap: wrap; }
-      #side-panel .panel { flex: 1; min-width: 200px; }
-      #jenis-panel-wrap { flex-direction: row; }
-      #table-panel { min-height: 400px; }
+      #side-panel { flex-direction: column; }
+      #jenis-panel-wrap { }
+      #table-panel { min-height: 420px; }
       #cards-row { grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* Mobile (≤768px): single column everything */
+    /* ≤768px: full single column */
     @media (max-width: 768px) {
-      #topbar { padding: 8px 12px; gap: 6px; }
-      .topbar-label h1 { font-size: 12px; }
+      #topbar { padding: 8px 10px; gap: 5px; flex-wrap: wrap; }
+      .topbar-label h1 { font-size: 11px; }
       .topbar-label p  { display: none; }
-      .topbar-badge    { width: 30px; height: 30px; font-size: 13px; }
-      #nav-tabs .nav-tab { padding: 5px 9px; font-size: 11px; }
+      .topbar-badge    { width: 28px; height: 28px; font-size: 12px; }
+      .nav-tab { padding: 5px 8px; font-size: 11px; }
       #dashboard-controls { gap: 4px; }
-      .btn { padding: 6px 10px; font-size: 11px; }
-      #main-wrapper { padding: 8px 10px; gap: 8px; }
-      #cards-row { grid-template-columns: repeat(3, 1fr); }
-      #bottom-section { grid-template-areas: "table" "side" "jenis"; }
-      #tbl-search { width: 130px; }
+      .btn { padding: 6px 9px; font-size: 11px; }
+      #main-wrapper { padding: 8px 8px; gap: 8px; }
+      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      #cards-row .stat-card:last-child { grid-column: 1 / -1; }
+      #bottom-section {
+        grid-template-columns: 1fr;
+        grid-template-areas: "table" "side" "jenis";
+        height: auto; min-height: unset;
+      }
+      #side-panel { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+      #side-panel .panel { flex: 1; min-width: 140px; max-height: 220px; }
+      #jenis-panel-wrap .panel { max-height: 220px; }
+      #table-panel { min-height: 360px; }
+      #tbl-search { width: 120px; min-width: 90px; }
       #table-toolbar { flex-wrap: wrap; gap: 6px; }
       .stat-card .value { font-size: 12px; }
       .stat-card .label { font-size: 8px; }
     }
 
-    /* Small mobile (≤480px) */
+    /* ≤480px: very small */
     @media (max-width: 480px) {
-      #cards-row { grid-template-columns: repeat(2, 1fr); }
-      .stat-card:nth-child(5), .stat-card:nth-child(6) { grid-column: span 1; }
-      #nav-tabs { gap: 2px; }
-      .nav-tab span:not(:first-child) { display: none; }
+      #cards-row { grid-template-columns: 1fr 1fr; }
+      .topbar-badge { display: none; }
+      .nav-tab { padding: 5px 6px; font-size: 10px; gap: 3px; }
+      #side-panel .panel { min-width: 100%; }
     }
 
     @media print {
@@ -1058,7 +1073,7 @@
       #modal-overlay, #toast, #loader { display: none !important; }
       body { overflow: visible; height: auto; }
       #main-wrapper { overflow: visible; }
-      #bottom-section { grid-template-columns: 1fr; }
+      #bottom-section { grid-template-columns: 1fr; grid-template-areas: "table" "side" "jenis"; }
     }
 
     /* ── MODAL JENIS SUMMARY ROW ────────────────────────── */
@@ -1968,24 +1983,23 @@
 
   // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
-    // 1. Utamakan field jenis yang sudah dinormalisasi dari code.gs
-    if (pkg.jenis && pkg.jenis.trim() && pkg.jenis.trim() !== '-') {
-      const jRaw = pkg.jenis.trim();
-      // Exact match dulu
-      const exact = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
-      if (exact) return exact.key;
-      // Partial match
+    // Gunakan field jenis yang sudah dinormalisasi code.gs (kolom E sheet RUP)
+    const jRaw = (pkg.jenis || '').trim();
+    if (jRaw && jRaw !== '-') {
+      // Cari exact match (case-insensitive)
+      const found = JENIS_DEF.find(j => j.key.toLowerCase() === jRaw.toLowerCase());
+      if (found) return found.key;
+      // Cari partial match
       const partial = JENIS_DEF.find(j =>
         jRaw.toLowerCase().includes(j.key.toLowerCase()) ||
         j.key.toLowerCase().includes(jRaw.toLowerCase())
       );
       if (partial) return partial.key;
-      return jRaw; // kembalikan nilai asli jika tidak cocok
     }
-    // 2. Fallback: deteksi dari nama paket
+    // Fallback: deteksi dari nama paket (semua JENIS_DEF termasuk Jasa Lainnya)
     const nm = (pkg.nama || '').toLowerCase();
-    for (let i = 0; i < JENIS_DEF.length - 1; i++) {
-      if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
+    for (const jd of JENIS_DEF) {
+      if (jd.match && jd.match(nm)) return jd.key;
     }
     return 'Jasa Lainnya';
   }
