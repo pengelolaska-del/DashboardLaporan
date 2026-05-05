@@ -1381,7 +1381,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzjCXg0Z10H_cgmnWOCJJIt9VgoNq-C4QVJI7WHWx45uSSRj8YLUfIV83Xk79exVGdVUg/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxVDJCI2gypCIm4Hcu-ovnEFNeyu22mma8Ilq7ID8DGnFv3lUbmMIz9TZmWYM84i2R7cg/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1415,6 +1415,8 @@
     buildBulanDropdown(currentBulan);
     buildBulanPicker();
     showLoader(false);
+    // Auto-load data saat halaman pertama kali dibuka
+    refreshData();
   });
 
   // ── CUSTOM BULAN DROPDOWN (DASHBOARD) ───────────────────
@@ -1478,15 +1480,57 @@
 
     try {
       const url = `${GAS_URL}?bulan=${encodeURIComponent(bulan)}&t=${Date.now()}`;
-      setLoaderProgress(30, 'Mengambil data RUP & Realisasi…');
-      const res  = await fetch(url);
-      setLoaderProgress(65, 'Memproses data…');
-      const json = await res.json();
+      setLoaderProgress(30, 'Mengambil data dari Google Sheets…');
 
-      if (json.error) throw new Error(json.error);
+      // Timeout 30 detik
+      const controller = new AbortController();
+      const timeoutId  = setTimeout(() => controller.abort(), 30000);
+
+      let res;
+      try {
+        res = await fetch(url, {
+          method : 'GET',
+          signal : controller.signal,
+          // Tidak pakai mode: 'no-cors' karena GAS sudah support CORS via doGet
+          // Jika error CORS, pastikan GAS di-deploy dengan akses "Anyone"
+        });
+      } catch (fetchErr) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('Koneksi timeout (30 detik). Periksa koneksi internet Anda.');
+        }
+        // Coba sekali lagi dengan jsonp-style fallback jika fetch biasa gagal
+        throw new Error(
+          'Gagal menghubungi server. Kemungkinan penyebab:\n' +
+          '1. GAS belum di-deploy ulang setelah perubahan code.gs\n' +
+          '2. Deployment GAS belum diset ke akses "Anyone"\n' +
+          '3. Koneksi internet bermasalah\n\n' +
+          'Detail: ' + fetchErr.message
+        );
+      }
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        throw new Error(`Server merespons dengan status ${res.status}. Coba deploy ulang GAS.`);
+      }
+
+      setLoaderProgress(65, 'Memproses data…');
+
+      let json;
+      try {
+        json = await res.json();
+      } catch (parseErr) {
+        throw new Error('Respons server tidak valid (bukan JSON). Pastikan GAS sudah di-deploy ulang.');
+      }
+
+      if (json.error) throw new Error('Error dari server: ' + json.error);
 
       allData = json.rekapSatker || [];
       allPkg  = json.allPackages  || [];
+
+      if (!allData.length && !allPkg.length) {
+        throw new Error(`Tidak ada data untuk bulan ${bulan}. Pastikan sheet "Realisasi_${bulan}" ada dan berisi data.`);
+      }
 
       setLoaderProgress(85, 'Merender dashboard…');
       buildCards(allData, allPkg);
@@ -1497,7 +1541,7 @@
       setLoaderProgress(100, 'Selesai!');
 
       setTimeout(() => showLoader(false), 300);
-      toast(`✅ Data ${bulan} berhasil dimuat — ${allData.length} satker`);
+      toast(`✅ Data ${bulan} berhasil dimuat — ${allData.length} satker, ${allPkg.length} paket`);
     } catch (e) {
       setLoaderProgress(100, '');
       setTimeout(() => showLoader(false), 200);
