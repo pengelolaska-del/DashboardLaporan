@@ -961,6 +961,63 @@
       body { overflow: visible; height: auto; }
       #main-wrapper { overflow: visible; }
     }
+
+    /* ── JENIS PENGADAAN MINI ROW (sidebar) ─────────────── */
+    .jenis-mini-row {
+      display: flex; align-items: center;
+      padding: 7px 8px; border-bottom: 1px solid var(--slate-100);
+      gap: 8px; border-radius: 8px; cursor: pointer;
+      transition: background .15s; margin: 1px 0; user-select: none;
+    }
+    .jenis-mini-row:last-child { border-bottom: none; }
+    .jenis-mini-row:hover { background: var(--slate-50); }
+    .jenis-mini-row.active {
+      background: #eff6ff;
+      border-bottom-color: transparent;
+      box-shadow: inset 0 0 0 1.5px var(--blue);
+    }
+    .jenis-mini-row .jm-icon { font-size: 14px; flex-shrink: 0; }
+    .jenis-mini-row .jm-info { flex: 1; min-width: 0; }
+    .jenis-mini-row .jm-name {
+      font-size: 11px; font-weight: 600; color: var(--slate-700);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .jenis-mini-row.active .jm-name { color: var(--blue); }
+    .jenis-mini-row .jm-sub {
+      font-size: 10px; color: var(--slate-400); margin-top: 1px;
+    }
+    .jenis-mini-row .jm-pct {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 5px;
+    }
+
+    /* ── MODAL JENIS SUMMARY ROW ────────────────────────── */
+    #modal-jenis-row {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--slate-100);
+      background: var(--slate-50);
+    }
+    #modal-jenis-row:empty { display: none; }
+    .modal-jenis-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--white); border: 1px solid var(--slate-200);
+      border-radius: 8px; padding: 5px 10px;
+      font-size: 11px; font-weight: 600; color: var(--slate-700);
+      cursor: pointer; transition: all .15s;
+    }
+    .modal-jenis-chip:hover { border-color: var(--blue); color: var(--blue); }
+    .modal-jenis-chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .modal-jenis-chip .mjc-count {
+      background: rgba(0,0,0,.1); border-radius: 4px;
+      padding: 0 4px; font-size: 10px;
+    }
+    .modal-jenis-chip.active .mjc-count { background: rgba(255,255,255,.25); }
+
+    /* ── EFISIENSI COLUMN ───────────────────────────────── */
+    .efisiensi-pos { color: #059669; font-weight: 700; }
+    .efisiensi-neg { color: #dc2626; font-weight: 700; }
+    .efisiensi-zero { color: var(--slate-400); }
   </style>
 </head>
 <body>
@@ -1077,6 +1134,15 @@
           <span class="filter-active-badge" id="badge-status">Aktif</span>
         </div>
         <div class="panel-body" id="panel-status">
+          <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
+        </div>
+      </div>
+      <!-- JENIS PENGADAAN PANEL -->
+      <div class="panel" style="flex: 1;">
+        <div class="panel-title">
+          <span class="panel-title-text">Jenis Pengadaan</span>
+        </div>
+        <div class="panel-body" id="panel-jenis">
           <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
         </div>
       </div>
@@ -1216,16 +1282,20 @@
       </div>
       <button id="modal-close" onclick="closeModal()">✕</button>
     </div>
+    <!-- JENIS SUMMARY INSIDE MODAL -->
+    <div id="modal-jenis-row"></div>
     <div id="modal-body">
       <table>
         <thead>
           <tr>
             <th>Kode RUP</th>
             <th>Nama Paket</th>
+            <th>Jenis</th>
             <th>Metode</th>
             <th>Status</th>
             <th class="r">Pagu</th>
             <th class="r">Realisasi</th>
+            <th class="r">Efisiensi</th>
           </tr>
         </thead>
         <tbody id="modalBody"></tbody>
@@ -1264,9 +1334,22 @@
   let activeRow = null;
 
   // ── FILTER STATE ─────────────────────────────────────────
-  let activeFilterMetode = null;  // string or null
-  let activeFilterStatus = null;  // string or null
-  let selectedSatkers    = new Set(); // empty = semua satker tampil
+  let activeFilterMetode = null;
+  let activeFilterStatus = null;
+  let activeFilterJenis  = null;   // filter jenis pengadaan di dashboard
+  let selectedSatkers    = new Set();
+
+  // ── JENIS PENGADAAN DEFINISI ─────────────────────────────
+  const JENIS_DEF = [
+    { key: 'Barang',               icon: '📦', color: '#2563eb', bg: '#eff6ff',
+      match: (nm) => /barang|pengadaan alat|beli|belanja bahan|makan|minum|atk|komputer|laptop|printer|furnitur|alat tulis|alat kebersihan|sepatu|pakaian|buku|tinta/i.test(nm) },
+    { key: 'Jasa Konsultansi',     icon: '📝', color: '#7c3aed', bg: '#f5f3ff',
+      match: (nm) => /konsultan|kajian|studi|perencanaan|pengawasan|audit|evaluasi|penelitian|pemetaan|survey teknis/i.test(nm) },
+    { key: 'Pekerjaan Konstruksi', icon: '🏗',  color: '#d97706', bg: '#fffbeb',
+      match: (nm) => /konstruksi|bangun|rehab|renovasi|gedung|jalan|jembatan|saluran|talud|drainase|paving|pagar|instalasi listrik|pemasangan/i.test(nm) },
+    { key: 'Jasa Lainnya',         icon: '🔧', color: '#0891b2', bg: '#ecfeff',
+      match: (nm) => true }, // fallback — semua yang tidak cocok di atas
+  ];
 
   // ── INIT ────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', () => {
@@ -1303,6 +1386,7 @@
     // Reset filter state on new data load
     activeFilterMetode = null;
     activeFilterStatus = null;
+    activeFilterJenis  = null;
     selectedSatkers    = new Set();
     updateFilterUI();
 
@@ -1324,6 +1408,7 @@
       setLoaderProgress(85, 'Merender dashboard…');
       buildCards(allData, allPkg);
       buildSidePanel(allPkg);
+      buildJenisPanel(allPkg);
       buildSatkerDropdown(allData);
       renderTable(allData);
       setLoaderProgress(100, 'Selesai!');
@@ -1532,7 +1617,57 @@
     }
   }
 
-  // ── SATKER DROPDOWN ──────────────────────────────────────
+  // ── JENIS PENGADAAN PANEL (SIDEBAR) ─────────────────────
+  function detectJenis(pkg) {
+    const nm = (pkg.nama || '').toLowerCase();
+    for (let i = 0; i < JENIS_DEF.length - 1; i++) {
+      if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
+    }
+    return 'Jasa Lainnya'; // fallback
+  }
+
+  function buildJenisPanel(pkgs) {
+    const el = document.getElementById('panel-jenis');
+    el.innerHTML = '';
+
+    // Hitung stats per jenis
+    const stats = {};
+    JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, pagu: 0, real: 0 }; });
+    pkgs.forEach(p => {
+      const k = detectJenis(p);
+      stats[k].count++;
+      stats[k].pagu += p.pagu;
+      stats[k].real += p.realisasi;
+    });
+
+    JENIS_DEF.forEach(j => {
+      const st = stats[j.key];
+      if (!st.count) return;
+      const pct = st.pagu > 0 ? (st.real / st.pagu * 100) : 0;
+      const pctCls = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+      const row = document.createElement('div');
+      row.className = 'jenis-mini-row' + (activeFilterJenis === j.key ? ' active' : '');
+      row.title = `Klik untuk filter: ${j.key}`;
+      row.innerHTML = `
+        <span class="jm-icon">${j.icon}</span>
+        <div class="jm-info">
+          <div class="jm-name">${j.key}</div>
+          <div class="jm-sub">${st.count} paket · ${fmt(st.real)}</div>
+        </div>
+        <span class="jm-pct ${pctCls}">${pct.toFixed(0)}%</span>`;
+      row.addEventListener('click', () => toggleFilterJenis(j.key));
+      el.appendChild(row);
+    });
+
+    if (!el.children.length)
+      el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+  }
+
+  function toggleFilterJenis(key) {
+    activeFilterJenis = activeFilterJenis === key ? null : key;
+    buildJenisPanel(allPkg);
+    filterTable();
+  }
   function buildSatkerDropdown(satkers) {
     selectedSatkers = new Set();
     updateSatkerBtn();
@@ -2134,7 +2269,16 @@
       filtered = filtered.filter(s => matchingSatkers.has(s.namaSatker));
     }
 
-    // 3. Search teks satker
+    // 3. Filter jenis pengadaan
+    if (activeFilterJenis) {
+      const matchingSatkers = new Set();
+      allPkg.forEach(p => {
+        if (detectJenis(p) === activeFilterJenis) matchingSatkers.add(p.satker);
+      });
+      filtered = filtered.filter(s => matchingSatkers.has(s.namaSatker));
+    }
+
+    // 4. Search teks satker
     if (q) {
       filtered = filtered.filter(s => s.namaSatker.toLowerCase().includes(q));
     }
@@ -2143,7 +2287,10 @@
   }
 
   // ── MODAL ────────────────────────────────────────────────
+  let activeModalJenis = null; // filter jenis di dalam modal
+
   function openModal(satker) {
+    activeModalJenis = null;
     document.getElementById('modal-title').textContent = satker.namaSatker;
 
     let pkgs = allPkg.filter(p => p.satker === satker.namaSatker);
@@ -2158,40 +2305,116 @@
       });
     }
 
-    const totalPkgs = allPkg.filter(p => p.satker === satker.namaSatker).length;
-    const filterNote = hasFilter ? ` · (${pkgs.length} dari ${totalPkgs} paket ditampilkan)` : '';
-    document.getElementById('modal-sub').textContent =
-      `${satker.totalPaket} paket · Pagu ${fmt(satker.nilaiRUP)} · Realisasi ${fmt(satker.nilaiReal)}${filterNote}`;
+    // Totals
+    const totalPagu  = pkgs.reduce((a, p) => a + p.pagu, 0);
+    const totalReal  = pkgs.reduce((a, p) => a + p.realisasi, 0);
+    const totalEfis  = totalPagu - totalReal;
+    const totalPkgs  = allPkg.filter(p => p.satker === satker.namaSatker).length;
+    const filterNote = hasFilter ? ` · (${pkgs.length} dari ${totalPkgs} paket)` : '';
+    document.getElementById('modal-sub').innerHTML =
+      `${pkgs.length} paket · Pagu <strong>${fmt(totalPagu)}</strong> · Realisasi <strong>${fmt(totalReal)}</strong> · Efisiensi <strong style="color:#059669">${fmt(totalEfis)}</strong>${filterNote}`;
+
+    // Build jenis summary chips
+    buildModalJenisRow(pkgs);
+
+    renderModalBody(pkgs);
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function buildModalJenisRow(pkgs) {
+    const row = document.getElementById('modal-jenis-row');
+    row.innerHTML = '';
+    const stats = {};
+    JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, real: 0 }; });
+    pkgs.forEach(p => { const k = detectJenis(p); stats[k].count++; stats[k].real += p.realisasi; });
+
+    // Chip "Semua"
+    const allChip = document.createElement('div');
+    allChip.className = 'modal-jenis-chip' + (!activeModalJenis ? ' active' : '');
+    allChip.innerHTML = `🗂 Semua <span class="mjc-count">${pkgs.length}</span>`;
+    allChip.onclick = () => { activeModalJenis = null; buildModalJenisRow(pkgs); renderModalBody(pkgs); };
+    row.appendChild(allChip);
+
+    JENIS_DEF.forEach(j => {
+      const st = stats[j.key];
+      if (!st.count) return;
+      const chip = document.createElement('div');
+      chip.className = 'modal-jenis-chip' + (activeModalJenis === j.key ? ' active' : '');
+      chip.innerHTML = `${j.icon} ${j.key} <span class="mjc-count">${st.count}</span>`;
+      chip.onclick = () => {
+        activeModalJenis = activeModalJenis === j.key ? null : j.key;
+        buildModalJenisRow(pkgs);
+        renderModalBody(pkgs);
+      };
+      row.appendChild(chip);
+    });
+  }
+
+  function renderModalBody(allPkgsForSatker) {
+    const pkgs = activeModalJenis
+      ? allPkgsForSatker.filter(p => detectJenis(p) === activeModalJenis)
+      : allPkgsForSatker;
 
     const tbody = document.getElementById('modalBody');
     tbody.innerHTML = '';
 
     if (!pkgs.length) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data paket</p></div></td></tr>`;
-    } else {
-      pkgs.forEach(p => {
-        const chipClass = /selesai/i.test(p.status) ? 'chip-selesai'
-                        : /berjalan|proses/i.test(p.status) ? 'chip-berjalan'
-                        : /belum/i.test(p.status) ? 'chip-belum' : 'chip-default';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate-500)">${p.kode || '—'}</td>
-          <td style="max-width:260px;word-break:break-word">${p.nama || '—'}</td>
-          <td>${p.metode || '—'}</td>
-          <td><span class="chip ${chipClass}">${p.status}</span></td>
-          <td class="r"><span class="money">${fmt(p.pagu)}</span></td>
-          <td class="r"><span class="money">${fmt(p.realisasi)}</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada data paket</p></div></td></tr>`;
+      return;
     }
 
-    document.getElementById('modal-overlay').classList.add('open');
+    pkgs.forEach(p => {
+      const chipClass = /selesai/i.test(p.status) ? 'chip-selesai'
+                      : /berjalan|proses/i.test(p.status) ? 'chip-berjalan'
+                      : /belum/i.test(p.status) ? 'chip-belum' : 'chip-default';
+      const jenis    = detectJenis(p);
+      const jenisDef = JENIS_DEF.find(j => j.key === jenis) || JENIS_DEF[3];
+
+      // Efisiensi: pagu - realisasi (hanya jika ada realisasi, i.e. kode RUP match)
+      const hasReal    = p.realisasi > 0;
+      const efisiensi  = hasReal ? (p.pagu - p.realisasi) : null;
+      const efisClass  = efisiensi === null ? 'efisiensi-zero'
+                       : efisiensi > 0 ? 'efisiensi-pos' : 'efisiensi-neg';
+      const efisStr    = efisiensi === null ? '—'
+                       : `${efisiensi >= 0 ? '' : '▲ '}${fmt(Math.abs(efisiensi))}`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate-500)">${p.kode || '—'}</td>
+        <td style="max-width:220px;word-break:break-word;font-size:11px">${p.nama || '—'}</td>
+        <td>
+          <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;background:${jenisDef.bg};color:${jenisDef.color};white-space:nowrap">
+            ${jenisDef.icon} ${jenis}
+          </span>
+        </td>
+        <td style="font-size:11px">${normMetode(p.metode) || '—'}</td>
+        <td><span class="chip ${chipClass}">${p.status}</span></td>
+        <td class="r"><span class="money">${fmt(p.pagu)}</span></td>
+        <td class="r"><span class="money">${fmt(p.realisasi)}</span></td>
+        <td class="r"><span class="money ${efisClass}">${efisStr}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Totals footer row
+    const totalPagu = pkgs.reduce((a, p) => a + p.pagu, 0);
+    const totalReal = pkgs.reduce((a, p) => a + p.realisasi, 0);
+    const totalEfis = pkgs.filter(p => p.realisasi > 0).reduce((a, p) => a + (p.pagu - p.realisasi), 0);
+    const tfoot = document.createElement('tr');
+    tfoot.style.cssText = 'font-weight:700;background:var(--slate-50);border-top:2px solid var(--slate-200)';
+    tfoot.innerHTML = `
+      <td colspan="5" style="font-size:11px;color:var(--slate-600)">TOTAL · ${pkgs.length} paket</td>
+      <td class="r"><span class="money">${fmt(totalPagu)}</span></td>
+      <td class="r"><span class="money">${fmt(totalReal)}</span></td>
+      <td class="r"><span class="money efisiensi-pos">${fmt(totalEfis)}</span></td>
+    `;
+    tbody.appendChild(tfoot);
   }
 
   function closeModal(e) {
     if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.getElementById('modal-close')) return;
     document.getElementById('modal-overlay').classList.remove('open');
+    activeModalJenis = null;
   }
 
   document.addEventListener('keydown', e => {
