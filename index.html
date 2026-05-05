@@ -200,8 +200,8 @@
     #main-wrapper {
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
-      padding: 16px 24px;
-      gap: 14px;
+      padding: 12px 16px;
+      gap: 10px;
       overflow: hidden;
     }
 
@@ -209,47 +209,30 @@
     #cards-row {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
+      gap: 8px;
       flex-shrink: 0;
     }
 
     .stat-card {
       border-radius: var(--radius);
-      padding: 14px 16px;
-      display: flex; flex-direction: column; gap: 6px;
+      padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 5px;
       position: relative; overflow: hidden;
       cursor: default;
       transition: transform .2s, box-shadow .2s;
     }
     .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-
     .stat-card::before {
       content: '';
       position: absolute; inset: 0;
       background: rgba(255,255,255,.08);
       border-radius: inherit;
     }
-    .stat-card .icon {
-      font-size: 20px; line-height: 1;
-      opacity: .85;
-    }
-    .stat-card .label {
-      font-size: 10px; font-weight: 700; letter-spacing: .8px;
-      text-transform: uppercase; opacity: .75; color: #fff;
-    }
-    .stat-card .value {
-      font-size: 15px; font-weight: 800; color: #fff;
-      font-family: 'JetBrains Mono', monospace;
-      line-height: 1.2;
-    }
-    .stat-card .sub {
-      font-size: 11px; font-weight: 500; color: rgba(255,255,255,.65);
-    }
-    .stat-card .stripe {
-      position: absolute; bottom: -10px; right: -10px;
-      width: 60px; height: 60px; border-radius: 50%;
-      background: rgba(255,255,255,.07);
-    }
+    .stat-card .icon  { font-size: 18px; line-height: 1; opacity: .85; }
+    .stat-card .label { font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; opacity: .75; color: #fff; }
+    .stat-card .value { font-size: 14px; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace; line-height: 1.2; }
+    .stat-card .sub   { font-size: 10px; font-weight: 500; color: rgba(255,255,255,.65); }
+    .stat-card .stripe { position: absolute; bottom: -10px; right: -10px; width: 55px; height: 55px; border-radius: 50%; background: rgba(255,255,255,.07); }
 
     .card-rup     { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
     .card-penyedia{ background: linear-gradient(135deg, #064e3b, #059669); }
@@ -258,34 +241,44 @@
     .card-real    { background: linear-gradient(135deg, #92400e, #d97706); }
 
     /* ─── BOTTOM SECTION ─────────────────────────────── */
+    /* Layout: [filter kiri] [tabel tengah] [jenis kanan] */
     #bottom-section {
       flex: 1; min-height: 0;
       display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 12px;
+      grid-template-columns: 200px 1fr 220px;
+      grid-template-areas: "side table jenis";
+      gap: 10px;
     }
 
-    /* ─── SIDE PANEL ─────────────────────────────────── */
+    /* ─── SIDE PANEL (kiri: metode + status) ────────── */
     #side-panel {
-      display: flex; flex-direction: column; gap: 12px;
-      overflow: hidden;
+      grid-area: side;
+      display: flex; flex-direction: column; gap: 8px;
+      overflow: hidden; min-height: 0;
+    }
+
+    /* ─── JENIS PANEL (kanan) ────────────────────────── */
+    #jenis-panel-wrap {
+      grid-area: jenis;
+      display: flex; flex-direction: column;
+      overflow: hidden; min-height: 0;
     }
 
     .panel {
       background: var(--white);
       border: 1px solid var(--slate-200);
       border-radius: var(--radius);
-      padding: 14px;
+      padding: 12px;
       box-shadow: var(--shadow-sm);
       display: flex; flex-direction: column;
       overflow: hidden;
     }
     .panel-title {
-      font-size: 11px; font-weight: 800; letter-spacing: .8px;
+      font-size: 10px; font-weight: 800; letter-spacing: .8px;
       text-transform: uppercase; color: var(--slate-500);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--slate-100);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: space-between;
     }
@@ -293,131 +286,89 @@
     .filter-active-badge {
       font-size: 9px; font-weight: 700; letter-spacing: .3px;
       background: var(--blue); color: #fff;
-      padding: 2px 6px; border-radius: 5px;
-      text-transform: uppercase;
-      display: none;
+      padding: 2px 5px; border-radius: 4px;
+      text-transform: uppercase; display: none;
     }
     .filter-active-badge.show { display: inline-flex; }
 
-    /* Active filter indicator on toolbar */
     .filter-chip {
       display: none; align-items: center; gap: 4px;
       background: #dbeafe; color: var(--blue);
-      border-radius: 6px; padding: 3px 8px;
+      border-radius: 6px; padding: 3px 7px;
       font-size: 11px; font-weight: 600;
     }
     .filter-chip.show { display: flex; }
-    .filter-chip-close {
-      cursor: pointer; font-size: 13px; line-height: 1;
-      opacity: .7; transition: opacity .15s;
-    }
+    .filter-chip-close { cursor: pointer; font-size: 12px; line-height: 1; opacity: .7; transition: opacity .15s; }
     .filter-chip-close:hover { opacity: 1; }
     .panel-body { overflow-y: auto; flex: 1; }
-    .panel-body::-webkit-scrollbar { width: 4px; }
-    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar { width: 3px; }
     .panel-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
 
     .mini-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 8px;
+      padding: 5px 7px;
       border-bottom: 1px solid var(--slate-100);
-      gap: 8px;
-      border-radius: 8px;
+      gap: 6px; border-radius: 7px;
       cursor: pointer;
-      transition: background .15s, transform .1s;
-      margin: 1px 0;
-      user-select: none;
+      transition: background .15s;
+      margin: 1px 0; user-select: none;
     }
     .mini-row:last-child { border-bottom: none; }
     .mini-row:hover { background: var(--slate-50); }
-    .mini-row.active {
-      background: #eff6ff;
-      border-bottom-color: transparent;
-      box-shadow: inset 0 0 0 1.5px var(--blue);
-    }
+    .mini-row.active { background: #eff6ff; border-bottom-color: transparent; box-shadow: inset 0 0 0 1.5px var(--blue); }
     .mini-row.active .name { color: var(--blue); font-weight: 700; }
-    .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mini-row .chip {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; font-weight: 600;
-      padding: 2px 7px; border-radius: 6px;
-      white-space: nowrap;
-    }
+    .mini-row .name { font-weight: 500; color: var(--slate-700); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+    .mini-row .chip { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 5px; white-space: nowrap; }
 
-    /* Status chips */
     .chip-selesai  { background: #d1fae5; color: #065f46; }
     .chip-berjalan { background: #dbeafe; color: #1e40af; }
     .chip-belum    { background: #fef3c7; color: #92400e; }
     .chip-default  { background: var(--slate-100); color: var(--slate-700); }
 
-    /* ─── MAIN TABLE PANEL ───────────────────────────── */
+    /* ─── MAIN TABLE PANEL (tengah) ──────────────────── */
     #table-panel {
+      grid-area: table;
       background: var(--white);
       border: 1px solid var(--slate-200);
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
       display: flex; flex-direction: column;
-      overflow: hidden;
+      overflow: hidden; min-height: 0;
     }
 
     #table-toolbar {
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid var(--slate-100);
-      gap: 12px;
-      flex-shrink: 0;
+      gap: 8px; flex-shrink: 0; flex-wrap: wrap;
     }
-
-    #table-toolbar .toolbar-left { display: flex; align-items: center; gap: 8px; }
+    #table-toolbar .toolbar-left { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     #toolbar-title { font-size: 12px; font-weight: 700; color: var(--slate-700); }
-    #toolbar-count {
-      font-size: 11px; font-weight: 600;
-      background: var(--slate-100); color: var(--slate-500);
-      padding: 2px 8px; border-radius: 6px;
-    }
+    #toolbar-count { font-size: 11px; font-weight: 600; background: var(--slate-100); color: var(--slate-500); padding: 2px 7px; border-radius: 6px; }
 
-    #tbl-search {
-      width: 200px;
-    }
+    #tbl-search { width: 180px; min-width: 120px; }
 
-    #table-wrap {
-      flex: 1; overflow-y: auto;
-    }
-    #table-wrap::-webkit-scrollbar { width: 5px; }
-    #table-wrap::-webkit-scrollbar-track { background: transparent; }
+    #table-wrap { flex: 1; overflow-y: auto; overflow-x: auto; }
+    #table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
     #table-wrap::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
 
     table { width: 100%; border-collapse: collapse; }
-
     thead th {
       position: sticky; top: 0; z-index: 2;
       background: var(--slate-50);
-      font-size: 10px; font-weight: 800;
-      letter-spacing: .6px; text-transform: uppercase;
-      color: var(--slate-500);
-      padding: 10px 14px;
+      font-size: 10px; font-weight: 800; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--slate-500);
+      padding: 9px 12px;
       border-bottom: 1px solid var(--slate-200);
-      text-align: left;
-      user-select: none;
+      text-align: left; user-select: none; white-space: nowrap;
     }
     thead th.r { text-align: right; }
     thead th.c { text-align: center; }
-
-    tbody tr {
-      border-bottom: 1px solid var(--slate-100);
-      transition: background .12s;
-      cursor: pointer;
-    }
+    tbody tr { border-bottom: 1px solid var(--slate-100); transition: background .12s; cursor: pointer; }
     tbody tr:hover { background: #eff6ff; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr.active-row { background: #dbeafe; }
-
-    td {
-      padding: 10px 14px;
-      color: var(--slate-700);
-      vertical-align: middle;
-    }
-    td.r { text-align: right; }
+    td { padding: 9px 12px; color: var(--slate-700); vertical-align: middle; }
     td.c { text-align: center; }
 
     .satker-name {
@@ -1007,14 +958,8 @@
     }
     .satker-item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    @media print {
-      #topbar .topbar-controls, #table-toolbar .btn, #tbl-search,
-      #modal-overlay, #toast, #loader { display: none !important; }
-      body { overflow: visible; height: auto; }
-      #main-wrapper { overflow: visible; }
-    }
-
-    /* ── JENIS PENGADAAN MINI ROW (sidebar) ─────────────── */
+    /* ── JENIS PENGADAAN PANEL KANAN ────────────────── */
+    #jenis-panel-wrap .panel { flex: 1; }
     .jenis-mini-row {
       display: flex; align-items: center;
       padding: 7px 8px; border-bottom: 1px solid var(--slate-100);
@@ -1023,24 +968,72 @@
     }
     .jenis-mini-row:last-child { border-bottom: none; }
     .jenis-mini-row:hover { background: var(--slate-50); }
-    .jenis-mini-row.active {
-      background: #eff6ff;
-      border-bottom-color: transparent;
-      box-shadow: inset 0 0 0 1.5px var(--blue);
-    }
-    .jenis-mini-row .jm-icon { font-size: 14px; flex-shrink: 0; }
+    .jenis-mini-row.active { background: #eff6ff; border-bottom-color: transparent; box-shadow: inset 0 0 0 1.5px var(--blue); }
+    .jenis-mini-row .jm-icon { font-size: 16px; flex-shrink: 0; }
     .jenis-mini-row .jm-info { flex: 1; min-width: 0; }
-    .jenis-mini-row .jm-name {
-      font-size: 11px; font-weight: 600; color: var(--slate-700);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
+    .jenis-mini-row .jm-name { font-size: 11px; font-weight: 600; color: var(--slate-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .jenis-mini-row.active .jm-name { color: var(--blue); }
-    .jenis-mini-row .jm-sub {
-      font-size: 10px; color: var(--slate-400); margin-top: 1px;
+    .jenis-mini-row .jm-sub  { font-size: 10px; color: var(--slate-400); margin-top: 1px; }
+    .jenis-mini-row .jm-pct  { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px; flex-shrink: 0; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    /* Tablet landscape (≤1280px): kurangi kolom jenis */
+    @media (max-width: 1280px) {
+      #bottom-section { grid-template-columns: 190px 1fr 200px; }
+      #cards-row { grid-template-columns: repeat(5, 1fr); }
     }
-    .jenis-mini-row .jm-pct {
-      font-size: 10px; font-weight: 700;
-      padding: 2px 6px; border-radius: 5px;
+
+    /* Tablet portrait (≤1024px): sembunyikan panel kiri, jenis di bawah */
+    @media (max-width: 1024px) {
+      body { height: auto; overflow: auto; }
+      #main-wrapper { overflow: visible; padding: 10px 12px; }
+      #bottom-section {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "table"
+          "side"
+          "jenis";
+        height: auto; min-height: unset;
+      }
+      #side-panel { flex-direction: row; flex-wrap: wrap; }
+      #side-panel .panel { flex: 1; min-width: 200px; }
+      #jenis-panel-wrap { flex-direction: row; }
+      #table-panel { min-height: 400px; }
+      #cards-row { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Mobile (≤768px): single column everything */
+    @media (max-width: 768px) {
+      #topbar { padding: 8px 12px; gap: 6px; }
+      .topbar-label h1 { font-size: 12px; }
+      .topbar-label p  { display: none; }
+      .topbar-badge    { width: 30px; height: 30px; font-size: 13px; }
+      #nav-tabs .nav-tab { padding: 5px 9px; font-size: 11px; }
+      #dashboard-controls { gap: 4px; }
+      .btn { padding: 6px 10px; font-size: 11px; }
+      #main-wrapper { padding: 8px 10px; gap: 8px; }
+      #cards-row { grid-template-columns: repeat(2, 1fr); }
+      #bottom-section { grid-template-areas: "table" "side" "jenis"; }
+      #tbl-search { width: 130px; }
+      #table-toolbar { flex-wrap: wrap; gap: 6px; }
+      .stat-card .value { font-size: 12px; }
+      .stat-card .label { font-size: 8px; }
+    }
+
+    /* Small mobile (≤480px) */
+    @media (max-width: 480px) {
+      #cards-row { grid-template-columns: 1fr 1fr; }
+      .stat-card:last-child { grid-column: span 2; }
+      #nav-tabs { gap: 2px; }
+      .nav-tab span:not(:first-child) { display: none; }
+    }
+
+    @media print {
+      #topbar, #table-toolbar .btn, #tbl-search,
+      #modal-overlay, #toast, #loader { display: none !important; }
+      body { overflow: visible; height: auto; }
+      #main-wrapper { overflow: visible; }
+      #bottom-section { grid-template-columns: 1fr; }
     }
 
     /* ── MODAL JENIS SUMMARY ROW ────────────────────────── */
@@ -1176,7 +1169,7 @@
   <!-- BOTTOM -->
   <div id="bottom-section">
 
-    <!-- SIDE PANEL -->
+    <!-- SIDE PANEL KIRI: Metode + Status -->
     <div id="side-panel">
       <div class="panel" style="flex: 1;">
         <div class="panel-title">
@@ -1196,18 +1189,9 @@
           <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
         </div>
       </div>
-      <!-- JENIS PENGADAAN PANEL -->
-      <div class="panel" style="flex: 1;">
-        <div class="panel-title">
-          <span class="panel-title-text">Jenis Pengadaan</span>
-        </div>
-        <div class="panel-body" id="panel-jenis">
-          <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
-        </div>
-      </div>
     </div>
 
-    <!-- MAIN TABLE PANEL -->
+    <!-- MAIN TABLE PANEL TENGAH -->
     <div id="table-panel">
       <div id="table-toolbar">
         <div class="toolbar-left">
@@ -1239,6 +1223,20 @@
         </table>
       </div>
     </div>
+
+    <!-- JENIS PENGADAAN PANEL KANAN -->
+    <div id="jenis-panel-wrap">
+      <div class="panel" style="flex:1;">
+        <div class="panel-title">
+          <span class="panel-title-text">Jenis Pengadaan</span>
+          <span class="filter-active-badge" id="badge-jenis">Aktif</span>
+        </div>
+        <div class="panel-body" id="panel-jenis">
+          <div class="empty-state"><div class="icon">⏳</div><p>Memuat…</p></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div><!-- /#main-wrapper -->
 </div><!-- /#page-dashboard -->
@@ -1702,27 +1700,27 @@
     }
   }
 
-  // ── JENIS PENGADAAN PANEL (SIDEBAR) ─────────────────────
+  // ── JENIS PENGADAAN PANEL (KANAN) ───────────────────────
   function detectJenis(pkg) {
     const nm = (pkg.nama || '').toLowerCase();
     for (let i = 0; i < JENIS_DEF.length - 1; i++) {
       if (JENIS_DEF[i].match(nm)) return JENIS_DEF[i].key;
     }
-    return 'Jasa Lainnya'; // fallback
+    return 'Jasa Lainnya';
   }
 
   function buildJenisPanel(pkgs) {
     const el = document.getElementById('panel-jenis');
     el.innerHTML = '';
 
-    // Hitung stats per jenis
     const stats = {};
-    JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, pagu: 0, real: 0 }; });
+    JENIS_DEF.forEach(j => { stats[j.key] = { count: 0, pagu: 0, real: 0, satkers: new Set() }; });
     pkgs.forEach(p => {
       const k = detectJenis(p);
       stats[k].count++;
       stats[k].pagu += p.pagu;
       stats[k].real += p.realisasi;
+      stats[k].satkers.add(p.satker);
     });
 
     JENIS_DEF.forEach(j => {
@@ -1730,14 +1728,15 @@
       if (!st.count) return;
       const pct = st.pagu > 0 ? (st.real / st.pagu * 100) : 0;
       const pctCls = pct >= 70 ? 'pct-hi' : pct >= 40 ? 'pct-mid' : 'pct-lo';
+
       const row = document.createElement('div');
       row.className = 'jenis-mini-row' + (activeFilterJenis === j.key ? ' active' : '');
-      row.title = `Klik untuk filter: ${j.key}`;
+      row.title = `Klik untuk filter: ${j.key} (${st.satkers.size} satker)`;
       row.innerHTML = `
         <span class="jm-icon">${j.icon}</span>
         <div class="jm-info">
           <div class="jm-name">${j.key}</div>
-          <div class="jm-sub">${st.count} paket · ${fmt(st.real)}</div>
+          <div class="jm-sub">${st.count} pkt · ${st.satkers.size} satker</div>
         </div>
         <span class="jm-pct ${pctCls}">${pct.toFixed(0)}%</span>`;
       row.addEventListener('click', () => toggleFilterJenis(j.key));
@@ -1746,12 +1745,47 @@
 
     if (!el.children.length)
       el.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>Tidak ada data</p></div>';
+
+    // Update badge
+    const badge = document.getElementById('badge-jenis');
+    if (badge) {
+      badge.classList.toggle('show', !!activeFilterJenis);
+    }
   }
 
   function toggleFilterJenis(key) {
     activeFilterJenis = activeFilterJenis === key ? null : key;
     buildJenisPanel(allPkg);
     filterTable();
+    // Update chip filter di toolbar
+    updateJenisChip();
+  }
+
+  function updateJenisChip() {
+    let chip = document.getElementById('chip-jenis');
+    if (!chip) {
+      // Buat chip baru di toolbar jika belum ada
+      chip = document.createElement('span');
+      chip.id = 'chip-jenis';
+      chip.className = 'filter-chip';
+      chip.innerHTML = `<span id="chip-jenis-label"></span><span class="filter-chip-close" onclick="clearFilterJenis()">✕</span>`;
+      const toolbarLeft = document.querySelector('#table-toolbar .toolbar-left');
+      if (toolbarLeft) toolbarLeft.appendChild(chip);
+    }
+    if (activeFilterJenis) {
+      const jd = JENIS_DEF.find(j => j.key === activeFilterJenis);
+      document.getElementById('chip-jenis-label').textContent = (jd ? jd.icon + ' ' : '') + activeFilterJenis;
+      chip.classList.add('show');
+    } else {
+      chip.classList.remove('show');
+    }
+  }
+
+  function clearFilterJenis() {
+    activeFilterJenis = null;
+    buildJenisPanel(allPkg);
+    filterTable();
+    updateJenisChip();
   }
   function buildSatkerDropdown(satkers) {
     selectedSatkers = new Set();
