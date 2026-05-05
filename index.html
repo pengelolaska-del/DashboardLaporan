@@ -71,24 +71,100 @@
     /* ─── TOPBAR ─────────────────────────────────────── */
     #topbar {
       flex-shrink: 0;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 24px;
+      display: flex; align-items: center;
+      flex-wrap: wrap;
+      padding: 10px 20px;
       background: var(--white);
       border-bottom: 1px solid var(--slate-200);
-      gap: 16px;
+      gap: 8px;
+      min-height: 56px;
     }
 
-    .topbar-title { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .topbar-badge {
-      width: 36px; height: 36px; border-radius: 10px;
+      width: 34px; height: 34px; border-radius: 10px;
       background: linear-gradient(135deg, var(--blue), var(--purple));
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      font-size: 15px; flex-shrink: 0;
     }
-    .topbar-label h1 { font-size: 14px; font-weight: 800; color: var(--slate-900); line-height: 1.2; }
-    .topbar-label p  { font-size: 11px; color: var(--slate-500); margin-top: 1px; }
+    .topbar-label h1 { font-size: 13px; font-weight: 800; color: var(--slate-900); line-height: 1.2; }
+    .topbar-label p  { font-size: 10px; color: var(--slate-500); margin-top: 1px; }
 
-    .topbar-controls { display: flex; align-items: center; gap: 8px; }
+    /* Nav tabs + controls group */
+    #nav-tabs {
+      display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .nav-tab {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 6px 13px; border-radius: 8px; border: none;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 5px;
+      color: var(--slate-500); background: transparent; white-space: nowrap;
+    }
+    .nav-tab:hover { background: var(--slate-100); color: var(--slate-700); }
+    .nav-tab.active { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+    .nav-divider { width: 1px; height: 20px; background: var(--slate-200); flex-shrink: 0; }
+
+    #dashboard-controls {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    /* ── CUSTOM BULAN DROPDOWN ───────────────────────── */
+    #bulan-dropdown-wrap { position: relative; flex-shrink: 0; }
+    #bulan-btn {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--slate-200); border-radius: 8px;
+      padding: 7px 12px; background: var(--slate-50);
+      color: var(--slate-700); cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap; min-width: 130px;
+      transition: border-color .2s, box-shadow .2s;
+      user-select: none;
+    }
+    #bulan-btn:hover { border-color: var(--blue); }
+    #bulan-btn.open  {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    #bulan-btn .bulan-arrow {
+      margin-left: auto; font-size: 9px;
+      color: var(--slate-400); transition: transform .2s;
+    }
+    #bulan-btn.open .bulan-arrow { transform: rotate(180deg); }
+
+    #bulan-dropdown {
+      display: none; position: absolute;
+      top: calc(100% + 6px); right: 0;
+      min-width: 200px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      z-index: 600;
+      overflow: hidden;
+      flex-direction: column;
+    }
+    #bulan-dropdown.open { display: flex; }
+    .bulan-option {
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      padding: 9px 14px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--slate-700); transition: background .12s;
+      border: none; background: transparent; text-align: left;
+      width: 100%;
+    }
+    .bulan-option:hover { background: var(--slate-50); }
+    .bulan-option.selected {
+      background: #eff6ff; color: var(--blue); font-weight: 700;
+    }
+    .bulan-option .bo-num {
+      font-size: 10px; font-weight: 700; color: var(--slate-400);
+      width: 18px; text-align: right; flex-shrink: 0;
+    }
+    .bulan-option.selected .bo-num { color: var(--blue); }
 
     select, input[type="text"] {
       font-family: inherit; font-size: 12px;
@@ -522,30 +598,6 @@
       color: var(--slate-500); cursor: pointer; transition: background .15s;
     }
     .error-btn-dismiss:hover { background: var(--slate-100); }
-
-    /* ─── NAV TABS ───────────────────────────────────── */
-    #nav-tabs {
-      display: flex; align-items: center; gap: 4px;
-      margin-right: 8px;
-    }
-    .nav-tab {
-      font-family: inherit; font-size: 12px; font-weight: 600;
-      padding: 7px 16px; border-radius: 8px; border: none;
-      cursor: pointer; transition: all .18s;
-      display: flex; align-items: center; gap: 6px;
-      color: var(--slate-500);
-      background: transparent;
-    }
-    .nav-tab:hover { background: var(--slate-100); color: var(--slate-700); }
-    .nav-tab.active {
-      background: var(--blue); color: #fff;
-      box-shadow: 0 2px 8px rgba(37,99,235,.3);
-    }
-    .nav-divider {
-      width: 1px; height: 20px;
-      background: var(--slate-200);
-      margin-right: 4px;
-    }
 
     /* ─── PAGE VISIBILITY ────────────────────────────── */
     .page { display: none; flex: 1; min-height: 0; flex-direction: column; }
@@ -1065,7 +1117,15 @@
         <div id="satker-list"></div>
       </div>
     </div>
-    <select id="selBulan" onchange="refreshData()"></select>
+    <select id="selBulan" style="display:none" onchange="refreshData()"></select>
+    <!-- Custom bulan dropdown -->
+    <div id="bulan-dropdown-wrap">
+      <div id="bulan-btn" onclick="toggleBulanDropdown()">
+        📅 <span id="bulan-btn-label">Pilih Bulan</span>
+        <span class="bulan-arrow">▼</span>
+      </div>
+      <div id="bulan-dropdown"></div>
+    </div>
     <button class="btn btn-ghost" onclick="window.print()">🖨 Cetak</button>
     <button class="btn btn-primary" onclick="refreshData()">↺ Segarkan</button>
   </div>
@@ -1355,16 +1415,59 @@
   window.addEventListener('DOMContentLoaded', () => {
     const sel = document.getElementById('selBulan');
     const cur = new Date().getMonth(); // 0-indexed
+
+    // Populate hidden select (kept for compatibility)
     BULAN_LIST.forEach((b, i) => {
       const o = document.createElement('option');
       o.value = b; o.textContent = b;
       if (i === cur) o.selected = true;
       sel.appendChild(o);
     });
-    buildBulanPicker();
-    // Tampilkan dashboard tanpa langsung memuat data
+
+    // Build custom bulan dropdown
+    buildBulanDropdown(BULAN_LIST[cur]);
+
+    buildBulanPicker(); // comparison page picker
     showLoader(false);
   });
+
+  // ── CUSTOM BULAN DROPDOWN (DASHBOARD) ───────────────────
+  function buildBulanDropdown(selectedBulan) {
+    const dd = document.getElementById('bulan-dropdown');
+    dd.innerHTML = '';
+    BULAN_LIST.forEach((b, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'bulan-option' + (b === selectedBulan ? ' selected' : '');
+      btn.innerHTML = `<span class="bo-num">${String(i+1).padStart(2,'0')}</span>${b}`;
+      btn.onclick = () => selectBulan(b);
+      dd.appendChild(btn);
+    });
+    document.getElementById('bulan-btn-label').textContent = selectedBulan;
+  }
+
+  function toggleBulanDropdown() {
+    const btn = document.getElementById('bulan-btn');
+    const dd  = document.getElementById('bulan-dropdown');
+    const open = dd.classList.toggle('open');
+    btn.classList.toggle('open', open);
+  }
+
+  function selectBulan(b) {
+    // Update hidden select
+    const sel = document.getElementById('selBulan');
+    sel.value = b;
+    // Update button label
+    document.getElementById('bulan-btn-label').textContent = b;
+    // Update dropdown highlight
+    document.querySelectorAll('.bulan-option').forEach(el => {
+      el.classList.toggle('selected', el.textContent.trim().endsWith(b));
+    });
+    // Close dropdown
+    document.getElementById('bulan-dropdown').classList.remove('open');
+    document.getElementById('bulan-btn').classList.remove('open');
+    // Load data
+    refreshData();
+  }
 
   // ── PAGE SWITCH ──────────────────────────────────────────
   let currentPage = 'dashboard';
@@ -2188,6 +2291,11 @@
     if (satkerWrap && !satkerWrap.contains(e.target)) {
       document.getElementById('satker-dropdown').classList.remove('open');
       document.getElementById('satker-btn').classList.remove('open');
+    }
+    const bulanWrap = document.getElementById('bulan-dropdown-wrap');
+    if (bulanWrap && !bulanWrap.contains(e.target)) {
+      document.getElementById('bulan-dropdown').classList.remove('open');
+      document.getElementById('bulan-btn').classList.remove('open');
     }
     const compSatkerWrap = document.getElementById('comp-satker-wrap');
     if (compSatkerWrap && !compSatkerWrap.contains(e.target)) {
