@@ -1381,7 +1381,7 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzUJ0CdjO0Vu4P-n1mc4xlVG8G-CsXjxVefwopT90Z37Dqfj1GsfzB5PKgAgp5syK-PxQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxVDJCI2gypCIm4Hcu-ovnEFNeyu22mma8Ilq7ID8DGnFv3lUbmMIz9TZmWYM84i2R7cg/exec";
 
   const BULAN_LIST = ["Januari","Februari","Maret","April","Mei","Juni",
                       "Juli","Agustus","September","Oktober","November","Desember"];
@@ -1590,39 +1590,44 @@
   }
 
   // ── CARDS ────────────────────────────────────────────────
+  // Helper aman: akses nested object tanpa crash jika undefined
+  function safeGet(obj, ...keys) {
+    return keys.reduce((o, k) => (o && o[k] !== undefined ? o[k] : 0), obj);
+  }
+
   function buildCards(satkers, pkgs) {
-    const totRUP   = satkers.reduce((a, s) => a + s.nilaiRUP, 0);
-    const totPaket = satkers.reduce((a, s) => a + s.totalPaket, 0);
+    const totRUP   = satkers.reduce((a, s) => a + (s.nilaiRUP   || 0), 0);
+    const totPaket = satkers.reduce((a, s) => a + (s.totalPaket || 0), 0);
 
     const penyedia = satkers.reduce((a, s) => ({
-      v: a.v + s.caraPengadaan.Penyedia.nilai,
-      c: a.c + s.caraPengadaan.Penyedia.count
+      v: a.v + safeGet(s, 'caraPengadaan', 'Penyedia', 'nilai'),
+      c: a.c + safeGet(s, 'caraPengadaan', 'Penyedia', 'count')
     }), { v: 0, c: 0 });
 
     const swak = satkers.reduce((a, s) => ({
-      v: a.v + s.caraPengadaan.Swakelola.nilai,
-      c: a.c + s.caraPengadaan.Swakelola.count
+      v: a.v + safeGet(s, 'caraPengadaan', 'Swakelola', 'nilai'),
+      c: a.c + safeGet(s, 'caraPengadaan', 'Swakelola', 'count')
     }), { v: 0, c: 0 });
 
-    // E-Purchasing: metode 'E-Purchasing' atau 'e-Purchasing'
-    const ep = pkgs.filter(p => /e[\-\s]?purchasing/i.test(p.metode));
-    const epNilai = ep.reduce((a, p) => a + p.pagu, 0);
+    // E-Purchasing: metode 'E-Katalog', 'Toko Daring', atau 'e-Purchasing'
+    const ep = pkgs.filter(p => /e[\-\s]?katalog|toko[\s]?daring|e[\-\s]?purchasing/i.test(p.metode));
+    const epNilai = ep.reduce((a, p) => a + (p.pagu || 0), 0);
 
     const selesai = satkers.reduce((a, s) => ({
-      v: a.v + s.progresStatus.Selesai.nilai,
-      c: a.c + s.progresStatus.Selesai.count
+      v: a.v + safeGet(s, 'progresStatus', 'Selesai', 'nilai'),
+      c: a.c + safeGet(s, 'progresStatus', 'Selesai', 'count')
     }), { v: 0, c: 0 });
 
     setText('c-rup',          fmt(totRUP));
-    setText('c-rup-sub',      `${totPaket} Paket`);
+    setText('c-rup-sub',      totPaket + ' Paket');
     setText('c-penyedia',     fmt(penyedia.v));
-    setText('c-penyedia-sub', `${penyedia.c} Paket`);
+    setText('c-penyedia-sub', penyedia.c + ' Paket');
     setText('c-epurch',       fmt(epNilai));
-    setText('c-epurch-sub',   `${ep.length} Transaksi`);
+    setText('c-epurch-sub',   ep.length + ' Transaksi');
     setText('c-swak',         fmt(swak.v));
-    setText('c-swak-sub',     `${swak.c} Paket`);
+    setText('c-swak-sub',     swak.c + ' Paket');
     setText('c-real',         fmt(selesai.v));
-    setText('c-real-sub',     `${selesai.c} Paket Selesai`);
+    setText('c-real-sub',     selesai.c + ' Paket Selesai');
   }
 
   // ── SIDE PANEL ───────────────────────────────────────────
