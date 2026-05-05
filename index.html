@@ -1482,7 +1482,7 @@
         </div>
         <div id="summary-totals-body">
           <div class="summary-row">
-            <div class="summary-row-label">💰 Pagu RUP</div>
+            <div class="summary-row-label">💰 Pagu RUP (terealisasi)</div>
             <div class="summary-row-value" id="sum-pagu">Rp 0</div>
           </div>
           <div class="summary-row">
@@ -1684,7 +1684,7 @@
 
   // ── FILTER STATE ─────────────────────────────────────────
   let activeFilterMetode = null;
-  let activeFilterStatus = null;
+  let activeFilterStatus = new Set(); // multi-select status
   let activeFilterJenis  = null;   // filter jenis pengadaan di dashboard
   let selectedSatkers    = new Set();
 
@@ -1830,6 +1830,18 @@
     return s;
   }
 
+  // Normalisasi status dari sheet (COMPLETED, ON PROCESS, dll) ke label baku
+  function normStatus(raw) {
+    if (!raw) return 'Belum Realisasi';
+    const s = raw.toString().trim().toLowerCase();
+    if (/^completed$|^selesai$|^done$/.test(s))                          return 'Selesai';
+    if (/on.?process|sedang|berjalan|berlangsung|progress/.test(s))      return 'Sedang Berjalan';
+    if (/payment.?outside|paid.?outside/.test(s))                        return 'Payment Outside System';
+    if (/belum|not.?started|not.?yet/.test(s))                           return 'Belum Realisasi';
+    // Kembalikan raw tapi title-case jika tidak dikenali
+    return raw.toString().trim();
+  }
+
   function normalizePackage(p) {
     if (!p) p = {};
     p.satker    = p.satker    || '';
@@ -1837,7 +1849,7 @@
     p.nama      = p.nama      || '-';
     p.jenis     = p.jenis     || 'Jasa Lainnya';
     p.metode    = p.metode    || 'Swakelola';
-    p.status    = p.status    || 'Belum Realisasi';
+    p.status    = normStatus(p.status);
     p.pagu      = parseFloat(p.pagu)      || 0;
     p.realisasi = parseFloat(p.realisasi) || 0;
     return p;
@@ -1871,7 +1883,7 @@
 
     // Reset filter state on new data load
     activeFilterMetode = null;
-    activeFilterStatus = null;
+    activeFilterStatus = new Set();
     activeFilterJenis  = null;
     selectedSatkers    = new Set();
     updateFilterUI();
@@ -2103,8 +2115,8 @@
       statusMap[s].pagu += (p.pagu || 0);  // tampilkan pagu RUP, bukan realisasi
     });
 
-    // Urutan tetap: Selesai → Sedang Berjalan → Belum Realisasi → lainnya
-    const statusOrder = ['Selesai', 'Sedang Berjalan', 'Belum Realisasi'];
+    // Urutan tetap: Selesai → Sedang Berjalan → Belum Realisasi → Payment Outside System → lainnya
+    const statusOrder = ['Selesai', 'Sedang Berjalan', 'Payment Outside System', 'Belum Realisasi'];
     const statuses = [
       ...statusOrder.filter(k => statusMap[k]).map(k => [k, statusMap[k]]),
       ...Object.entries(statusMap).filter(([k]) => !statusOrder.includes(k))
@@ -2117,7 +2129,7 @@
                       : /berjalan|proses|sedang/i.test(name) ? 'chip-berjalan'
                       : /belum/i.test(name)              ? 'chip-belum' : 'chip-default';
       const row = document.createElement('div');
-      row.className = 'mini-row' + (activeFilterStatus === name ? ' active' : '');
+      row.className = 'mini-row' + (activeFilterStatus.has(name) ? ' active' : '');
       row.title = 'Klik untuk filter status: ' + name;
 
       row.innerHTML =
@@ -2137,10 +2149,10 @@
   function toggleFilterMetode(name) {
     if (activeFilterMetode === name) {
       activeFilterMetode = null;
-      activeFilterStatus = null;
+      activeFilterStatus = new Set();
     } else {
       activeFilterMetode = name;
-      activeFilterStatus = null;
+      activeFilterStatus = new Set();
     }
     updateFilterUI();
     filterTable();
@@ -2149,7 +2161,11 @@
 
   // ── FILTER TOGGLE STATUS (TURUNAN) ──────────────────────
   function toggleFilterStatus(name) {
-    activeFilterStatus = activeFilterStatus === name ? null : name;
+    if (activeFilterStatus.has(name)) {
+      activeFilterStatus.delete(name);
+    } else {
+      activeFilterStatus.add(name);
+    }
     updateFilterUI();
     filterTable();
     buildSidePanel(allPkg);
@@ -2159,9 +2175,9 @@
   function clearFilter(type) {
     if (type === 'metode') {
       activeFilterMetode = null;
-      activeFilterStatus = null;
+      activeFilterStatus = new Set();
     }
-    if (type === 'status') activeFilterStatus = null;
+    if (type === 'status') activeFilterStatus = new Set();
     updateFilterUI();
     filterTable();
     buildSidePanel(allPkg);
@@ -2185,8 +2201,9 @@
       badgeMetode.classList.remove('show');
     }
 
-    if (activeFilterStatus) {
-      labelStatus.textContent = '⚡ ' + activeFilterStatus;
+    if (activeFilterStatus.size > 0) {
+      const statusArr = [...activeFilterStatus];
+      labelStatus.textContent = '⚡ ' + (statusArr.length === 1 ? statusArr[0] : statusArr.length + ' status');
       chipStatus.classList.add('show');
       badgeStatus.classList.add('show');
     } else {
@@ -2870,10 +2887,10 @@
       let pkgs = pkgBySatker[s.namaSatker] || [];
 
       // Terapkan filter metode & status agar nilai tabel konsisten dengan filter aktif
-      if (activeFilterMetode || activeFilterStatus) {
+      if (activeFilterMetode || activeFilterStatus.size > 0) {
         pkgs = pkgs.filter(p => {
           const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
-          const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+          const statusMatch = activeFilterStatus.size === 0 || activeFilterStatus.has(p.status || 'Belum Realisasi');
           return metodeMatch && statusMatch;
         });
       }
@@ -2941,23 +2958,24 @@
     filteredData.filter(s => s.totalPaket > 0).forEach(s => {
       let pkgs  = pkgBySatker[s.namaSatker] || [];
       // Terapkan filter metode & status agar ringkasan konsisten dengan tabel
-      if (activeFilterMetode || activeFilterStatus) {
+      if (activeFilterMetode || activeFilterStatus.size > 0) {
         pkgs = pkgs.filter(p => {
           const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
-          const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+          const statusMatch = activeFilterStatus.size === 0 || activeFilterStatus.has(p.status || 'Belum Realisasi');
           return metodeMatch && statusMatch;
         });
       }
       if (activeFilterJenis) {
         pkgs = pkgs.filter(p => detectJenis(p) === activeFilterJenis);
       }
-      // Total pagu semua paket terfilter (termasuk belum realisasi)
-      const paguSemua = pkgs.reduce((a, p) => a + (p.pagu || 0), 0);
-      // Hanya paket yang ada realisasinya untuk menghitung realisasi & efisiensi
+      // Paket ter-join = kode RUP ditemukan di sheet Realisasi (status bukan 'Belum Realisasi')
+      const pkgsJoined = pkgs.filter(p => p.status !== 'Belum Realisasi');
+      const paguJoined = pkgsJoined.reduce((a, p) => a + (p.pagu || 0), 0);
+      // Hanya paket yang ada nilai realisasinya
       const pkgsR = pkgs.filter(p => (p.realisasi || 0) > 0);
       const realR = pkgsR.reduce((a, p) => a + (p.realisasi || 0), 0);
 
-      totalPaguReal += paguSemua;
+      totalPaguReal += paguJoined;
       totalReal     += realR;
       totalPkt      += pkgs.length;
       totalPktReal  += pkgsR.length;
@@ -2996,11 +3014,11 @@
     }
 
     // 2. Filter metode & status dari side panel
-    if (activeFilterMetode || activeFilterStatus) {
+    if (activeFilterMetode || activeFilterStatus.size > 0) {
       const matchingSatkers = new Set();
       allPkg.forEach(p => {
         const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
-        const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+        const statusMatch = activeFilterStatus.size === 0 || activeFilterStatus.has(p.status || 'Belum Realisasi');
         if (metodeMatch && statusMatch) matchingSatkers.add(p.satker);
       });
       filtered = filtered.filter(s => matchingSatkers.has(s.namaSatker));
@@ -3033,11 +3051,11 @@
     let pkgs = allPkg.filter(p => p.satker === satker.namaSatker);
 
     // Apply active panel filters inside modal too
-    const hasFilter = activeFilterMetode || activeFilterStatus;
+    const hasFilter = activeFilterMetode || activeFilterStatus.size > 0;
     if (hasFilter) {
       pkgs = pkgs.filter(p => {
         const metodeMatch = !activeFilterMetode || normMetode(p.metode) === activeFilterMetode;
-        const statusMatch = !activeFilterStatus || (p.status || 'Belum Realisasi') === activeFilterStatus;
+        const statusMatch = activeFilterStatus.size === 0 || activeFilterStatus.has(p.status || 'Belum Realisasi');
         return metodeMatch && statusMatch;
       });
     }
