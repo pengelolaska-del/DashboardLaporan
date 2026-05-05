@@ -1666,6 +1666,7 @@
     </div>
     <div id="colsettings-footer">
       <button class="btn btn-ghost" onclick="resetColWidths()">↺ Reset Default</button>
+      <button class="btn btn-ghost" id="btn-save-settings" onclick="saveColSettings()" style="color:var(--green);border-color:var(--green);">💾 Simpan</button>
       <button class="btn btn-primary" onclick="closeColSettings()">✓ Tutup</button>
     </div>
   </div>
@@ -3405,6 +3406,58 @@
       applyAllPanels();
     }
   }
+
+  // ── SIMPAN / MUAT PENGATURAN KOLOM ─────────────────────────
+  const CS_STORAGE_KEY = 'dashboard_col_settings_v1';
+
+  function saveColSettings() {
+    try {
+      const data = { colWidths, panelWidths };
+      localStorage.setItem(CS_STORAGE_KEY, JSON.stringify(data));
+      const btn = document.getElementById('btn-save-settings');
+      if (btn) { btn.textContent = '✓ Tersimpan'; setTimeout(() => { btn.textContent = '💾 Simpan'; }, 2000); }
+      toast('✅ Pengaturan kolom tersimpan');
+    } catch (e) {
+      toast('❌ Gagal menyimpan: ' + e.message, true);
+    }
+  }
+
+  function loadColSettings() {
+    try {
+      const raw = localStorage.getItem(CS_STORAGE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      // Validasi & terapkan colWidths
+      if (data.colWidths) {
+        COL_DEFS.forEach(c => {
+          const v = data.colWidths[c.id];
+          if (v !== undefined && v >= c.minPx && v <= c.maxPx) colWidths[c.id] = v;
+        });
+      }
+      // Validasi & terapkan panelWidths
+      if (data.panelWidths) {
+        PANEL_DEFS.forEach(p => {
+          const v = data.panelWidths[p.id];
+          if (v !== undefined && (v === 0 || (v >= p.minVal && v <= p.maxVal))) panelWidths[p.id] = v;
+        });
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Muat pengaturan tersimpan saat halaman dibuka
+  (function initColSettings() {
+    const loaded = loadColSettings();
+    // Terapkan panel widths dulu (tidak butuh DOM tabel)
+    applyAllPanels();
+    // colWidths diterapkan setelah tabel dirender via applyColWidths() yang sudah dipanggil di renderTable
+    if (loaded) {
+      // Terapkan segera jika tabel sudah ada
+      setTimeout(applyColWidths, 300);
+    }
+  })();
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') document.getElementById('colsettings-overlay').classList.remove('open');
