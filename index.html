@@ -1830,15 +1830,16 @@
     return s;
   }
 
-  // Normalisasi status dari sheet (COMPLETED, ON PROCESS, dll) ke label baku
+  // Normalisasi status dari sheet ke label baku
+  // Menangani: COMPLETED, PAKET SELESAI, ON PROCESS, PAYMENT OUTSIDE SYSTEM, dll.
   function normStatus(raw) {
     if (!raw) return 'Belum Realisasi';
     const s = raw.toString().trim().toLowerCase();
-    if (/^completed$|^selesai$|^done$/.test(s))                          return 'Selesai';
+    if (/selesai|completed|done|finish/.test(s))                         return 'Selesai';
     if (/on.?process|sedang|berjalan|berlangsung|progress/.test(s))      return 'Sedang Berjalan';
     if (/payment.?outside|paid.?outside/.test(s))                        return 'Payment Outside System';
     if (/belum|not.?started|not.?yet/.test(s))                           return 'Belum Realisasi';
-    // Kembalikan raw tapi title-case jika tidak dikenali
+    // Kembalikan raw jika tidak dikenali
     return raw.toString().trim();
   }
 
@@ -2898,11 +2899,11 @@
         pkgs = pkgs.filter(p => detectJenis(p) === activeFilterJenis);
       }
 
-      // Nilai RUP   → sum p.pagu dari sheet RUP_<bulan>        (kolom J)
+      // Nilai RUP   → sum p.pagu dari sheet RUP_<bulan> (semua paket terfilter)
       const nilaiRUP  = pkgs.reduce((a, p) => a + (p.pagu      || 0), 0);
-      // Realisasi   → sum p.realisasi dari Realisasi_<bulan>   (kolom L)
+      // Realisasi   → sum p.realisasi dari Realisasi_<bulan> (hanya paket ter-join)
       const nilaiReal = pkgs.reduce((a, p) => a + (p.realisasi || 0), 0);
-      // Efisiensi   → Pagu dari paket yang ada realisasi − Realisasi (abaikan realisasi=0)
+      // Paket ter-join = realisasi > 0 (kode RUP cocok di sheet Realisasi)
       const pkgsReal2   = pkgs.filter(p => (p.realisasi || 0) > 0);
       const paguReal2   = pkgsReal2.reduce((a, p) => a + (p.pagu      || 0), 0);
       const realReal2   = pkgsReal2.reduce((a, p) => a + (p.realisasi || 0), 0);
@@ -2911,7 +2912,8 @@
       const totalPkt   = pkgs.length;
       const dilaks     = pkgs.filter(p => p.realisasi > 0).length;
 
-      const pct        = nilaiRUP > 0 ? (nilaiReal / nilaiRUP * 100) : 0;
+      // Persentase serapan dihitung dari pagu paket yang ter-join (bukan semua pagu RUP)
+      const pct        = paguReal2 > 0 ? (nilaiReal / paguReal2 * 100) : 0;
       const pctStr     = pct.toFixed(1) + '%';
       const colorClass = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
       const efisClass  = nilaiReal === 0 ? 'efisiensi-zero'
@@ -2968,12 +2970,11 @@
       if (activeFilterJenis) {
         pkgs = pkgs.filter(p => detectJenis(p) === activeFilterJenis);
       }
-      // Paket ter-join = kode RUP ditemukan di sheet Realisasi (status bukan 'Belum Realisasi')
-      const pkgsJoined = pkgs.filter(p => p.status !== 'Belum Realisasi');
-      const paguJoined = pkgsJoined.reduce((a, p) => a + (p.pagu || 0), 0);
-      // Hanya paket yang ada nilai realisasinya
+      // Pagu & Realisasi hanya dari paket yang benar-benar ter-join (realisasi > 0)
+      // Ini memastikan pagu yang ditampilkan = pagu dari paket yang SAMA dengan yang ada di sheet Realisasi
       const pkgsR = pkgs.filter(p => (p.realisasi || 0) > 0);
-      const realR = pkgsR.reduce((a, p) => a + (p.realisasi || 0), 0);
+      const paguJoined = pkgsR.reduce((a, p) => a + (p.pagu || 0), 0);
+      const realR      = pkgsR.reduce((a, p) => a + (p.realisasi || 0), 0);
 
       totalPaguReal += paguJoined;
       totalReal     += realR;
