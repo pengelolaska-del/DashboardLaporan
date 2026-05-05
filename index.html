@@ -1465,6 +1465,29 @@
   }
 
   // ── FETCH ────────────────────────────────────────────────
+  // ── JSONP FALLBACK (untuk mengatasi CORS) ───────────────
+  function fetchViaJsonp(url) {
+    return new Promise((resolve, reject) => {
+      const cbName = '_gasCb_' + Date.now();
+      const script = document.createElement('script');
+      const timer  = setTimeout(() => {
+        cleanup();
+        reject(new Error('JSONP timeout'));
+      }, 25000);
+
+      function cleanup() {
+        clearTimeout(timer);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[cbName] = (data) => { cleanup(); resolve(data); };
+      script.onerror = () => { cleanup(); reject(new Error('JSONP script error')); };
+      script.src = url + '&callback=' + cbName;
+      document.head.appendChild(script);
+    });
+  }
+
   async function refreshData() {
     const bulan = currentBulan;
 
@@ -1486,41 +1509,46 @@
       const controller = new AbortController();
       const timeoutId  = setTimeout(() => controller.abort(), 30000);
 
-      let res;
+      let res, json;
       try {
-        res = await fetch(url, {
-          method : 'GET',
-          signal : controller.signal,
-          // Tidak pakai mode: 'no-cors' karena GAS sudah support CORS via doGet
-          // Jika error CORS, pastikan GAS di-deploy dengan akses "Anyone"
-        });
+        res = await fetch(url, { method: 'GET', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        setLoaderProgress(65, 'Memproses data…');
+        json = await res.json();
       } catch (fetchErr) {
         clearTimeout(timeoutId);
         if (fetchErr.name === 'AbortError') {
-          throw new Error('Koneksi timeout (30 detik). Periksa koneksi internet Anda.');
+          throw new Error('⏱ Koneksi timeout (30 detik). Periksa koneksi internet Anda.');
         }
-        // Coba sekali lagi dengan jsonp-style fallback jika fetch biasa gagal
-        throw new Error(
-          'Gagal menghubungi server. Kemungkinan penyebab:\n' +
-          '1. GAS belum di-deploy ulang setelah perubahan code.gs\n' +
-          '2. Deployment GAS belum diset ke akses "Anyone"\n' +
-          '3. Koneksi internet bermasalah\n\n' +
-          'Detail: ' + fetchErr.message
-        );
-      }
-      clearTimeout(timeoutId);
+        // --- Fallback: JSONP (mengatasi CORS di beberapa browser/lingkungan) ---
+        setLoaderProgress(45, 'Mencoba metode alternatif (JSONP)…');
+        try {
+          json = await fetchViaJsonp(url);
+          setLoaderProgress(65, 'Memproses data…');
+        } catch (jsonpErr) {
+          throw new Error(
+            '❌ Tidak dapat terhubung ke Google Apps Script.
 
-      if (!res.ok) {
-        throw new Error(`Server merespons dengan status ${res.status}. Coba deploy ulang GAS.`);
-      }
+' +
+            'Langkah perbaikan:
+' +
+            '1. Buka Google Apps Script
+' +
+            '2. Deploy → New Deployment
+' +
+            '3. Type: Web App
+' +
+            '4. Execute as: Me
+' +
+            '5. Who has access: Anyone
+' +
+            '6. Salin URL baru & update GAS_URL di index.html
 
-      setLoaderProgress(65, 'Memproses data…');
-
-      let json;
-      try {
-        json = await res.json();
-      } catch (parseErr) {
-        throw new Error('Respons server tidak valid (bukan JSON). Pastikan GAS sudah di-deploy ulang.');
+' +
+            'Detail error: ' + fetchErr.message
+          );
+        }
       }
 
       if (json.error) throw new Error('Error dari server: ' + json.error);
