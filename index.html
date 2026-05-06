@@ -2050,15 +2050,17 @@
    * 5. Nama metode "-" ditampilkan sebagai "Swakelola".
    */
   function normMetode(m) {
-    if (!m || m.trim() === '-' || m.trim() === '') return 'Swakelola';
-    const t = m.trim();
-    if (/^e[\-\s]?katalog$/i.test(t))           return 'E-Katalog';
-    if (/^e[\-\s]?purchasing$/i.test(t))        return 'E-Purchasing';
-    if (/^toko[\s]?daring$/i.test(t))            return 'Toko Daring';
-    if (/^tender[\s]?cepat$/i.test(t))           return 'Tender Cepat';
-    if (/^pengadaan[\s]?langsung$/i.test(t))     return 'Pengadaan Langsung';
-    if (/^non[\s\-]?tender$/i.test(t))           return 'Non Tender';
-    return t;
+    const s = (m || '').trim();
+    if (!s || s === '-')                       return 'Swakelola';
+    if (/^e[\-\s]?katalog/i.test(s))        return 'E-Katalog';
+    if (/^e[\-\s]?purchasing/i.test(s))     return 'E-Purchasing';
+    if (/^toko[\s]?daring/i.test(s))         return 'Toko Daring';
+    if (/^tender[\s]?cepat/i.test(s))        return 'Tender Cepat';
+    if (/^tender\b/i.test(s))                return 'Tender';
+    if (/^pengadaan[\s]?langsung/i.test(s))  return 'Pengadaan Langsung';
+    if (/^non[\s\-]?tender/i.test(s))       return 'Non Tender';
+    if (/^swakelola/i.test(s))                return 'Swakelola';
+    return s;
   }
 
   function buildSidePanel(pkgs) {
